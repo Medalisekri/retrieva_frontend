@@ -25,9 +25,7 @@ Future<List<Item>> getItems() async {
   final List<Item> items = [];
   try{
   final  response = await _dio.get('/items/item/' , options: await _authOptions);
-  print('STATUS: ${response.statusCode}');
-  print('BODY: ${response.data}');
-  if(response.statusCode!=200){
+   if(response.statusCode!=200){
     throw Exception('Something went wrong ${response.statusMessage}');
   }
   final List<dynamic> rawData = response.data as List<dynamic>;
