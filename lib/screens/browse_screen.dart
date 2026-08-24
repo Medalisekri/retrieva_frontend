@@ -3,8 +3,8 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrieva/providers/item_provider.dart';
 
-import '../theme/apptheme.dart';
-import '../widgets/browse_card.dart';
+import '../core/theme/apptheme.dart';
+import '../core/widgets/browse_card.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});

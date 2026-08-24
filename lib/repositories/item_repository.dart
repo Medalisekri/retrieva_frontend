@@ -18,9 +18,6 @@ class ItemRepository  {
     });
   }
 
-
-
-
 Future<List<Item>> getItems() async {
   final List<Item> items = [];
   try{

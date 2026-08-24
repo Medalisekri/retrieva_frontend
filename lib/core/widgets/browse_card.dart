@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../theme/apptheme.dart';
-import '../models/item_model.dart';
+import '../../../core/theme/apptheme.dart';
+import '../../models/item_model.dart';
 
 class BrowseItemCard extends StatelessWidget {
   final Item item;

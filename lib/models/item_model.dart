@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 class Item {
+  final int userId;
   final String type;
   final String category;
   final String name;
@@ -12,7 +15,9 @@ class Item {
   final DateTime expiresAt;
   final bool isReported;
 
+
   Item({
+    required this.userId,
     required this.type,
     required this.category,
     required this.name,
@@ -45,6 +50,7 @@ class Item {
   bool get isLost => type == 'Lost';
   factory Item.fromJson(Map<String , dynamic> json){
     return Item(
+      userId: json['userId'],
       type: json['type'],
       category: json['category'],
       name: json['name'],
