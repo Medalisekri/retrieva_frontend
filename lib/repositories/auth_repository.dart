@@ -18,13 +18,20 @@ Future<void> signUp(String email , String password , String fullName) async{
   try{
     final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email, password: password);
+    final token = await credential.user?.getIdToken();
       await credential.user?.sendEmailVerification();
-    await _dio.patch('accounts/profile/' ,
-        data: {'full_name' : fullName} , options: await _authOptions);
+    await _dio.patch(
+      'accounts/profile/',
+      data: {'full_name': fullName},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
    
-  }catch(e){
-    throw Exception('Something went wrong: $e');
+  }catch (e) {
+  if (e is DioException) {
+  print('STATUS: ${e.response?.statusCode}');
+  print('BODY: ${e.response?.data}');
+  }
   }
 }
 

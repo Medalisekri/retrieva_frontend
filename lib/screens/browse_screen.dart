@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/item_provider.dart';
-
 import '../core/theme/apptheme.dart';
 import '../core/widgets/browse_card.dart';
 
@@ -59,6 +60,9 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
       ),
       body: Column(
         children: [
+          ElevatedButton(onPressed: (){
+            context.push(AppRoutes.signup);
+          }, child: Text('Sign Up')),
 // ── Search + Filters (fixed) ─────────────────
           Container(
             color: Colors.white,

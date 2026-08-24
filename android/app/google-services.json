@@ -12,7 +12,20 @@
           "package_name": "com.example.retrieva"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "305634903844-trmpgsbqt6hd2v7ipf4pqffnivr23bku.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.retrieva",
+            "certificate_hash": "3a597285b60a09668e526a236bae35540225826f"
+          }
+        },
+        {
+          "client_id": "305634903844-bffjs6t5tt96c05o6l0s4u9nvs1b3v77.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCQzWd1no8WuxRWjfpRyclMJ_4VDyLnYpA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "305634903844-bffjs6t5tt96c05o6l0s4u9nvs1b3v77.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "305634903844-9t8p05n7d9428iaq65knll882apupvq8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.retrieva"
+              }
+            }
+          ]
         }
       }
     }

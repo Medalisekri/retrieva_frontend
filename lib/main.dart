@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrieva/screens/browse_screen.dart';
 
+import 'core/router/app_router.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -14,11 +15,22 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(ProviderScope(child:  MaterialApp(
-    routes: {
-      '/': (context)=>const BrowseScreen(),
-    },
-  )));
+  runApp(ProviderScope(child:  RetrievaApp(
+    )));
+}
+class RetrievaApp extends ConsumerWidget {
+  const RetrievaApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
+      title: 'Retrieva',
+      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+    );
+  }
 }
 
 
