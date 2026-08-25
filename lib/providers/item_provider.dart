@@ -1,33 +1,32 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/repositories/item_repository.dart';
 
-class ItemState{
-      final List<Item> items;
-      final bool isLoading;
-      final String? errorMessage;
+final itemRepositoryProvider = Provider<ItemRepository>((ref)
+{return ItemRepository();});
 
-      ItemState({
-        this.items = const[],
-        this.isLoading = false,
-        this.errorMessage,
-});
-}
-
-class ItemProvider extends StateNotifier<ItemState> {
-  ItemProvider():super(ItemState()){
-    loadItems();
+class ItemNotifier extends AsyncNotifier<List<Item>> {
+  @override
+  Future<List<Item>> build() async{
+  return _repository.getItems();
   }
-  final _repository = ItemRepository();
+  ItemRepository get _repository => ref.read(itemRepositoryProvider);
+
+
   void loadItems()async {
-    try{
-      state = ItemState(items: [] , isLoading: true);
-      final i = await _repository.getItems();
-      state = ItemState(items: i , isLoading: false);
-    }catch(e){
-      state = ItemState(errorMessage: 'Something went wrong $e' , isLoading: false);
-    }
+    state = const AsyncValue.loading();
+    state =await AsyncValue.guard<List<Item>>(()async {
+        return await _repository.getItems();
+      }
+    );
   }
-}final itemProvider = StateNotifierProvider<ItemProvider , ItemState>(
-    (ref) => ItemProvider()
+
+
+
+
+}final itemNotifier = AsyncNotifierProvider<ItemNotifier , List<Item>>(
+    ItemNotifier.new
 );

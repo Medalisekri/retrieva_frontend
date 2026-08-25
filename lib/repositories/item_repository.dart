@@ -22,6 +22,7 @@ Future<List<Item>> getItems() async {
   final List<Item> items = [];
   try{
   final  response = await _dio.get('/items/item/' , options: await _authOptions);
+  print(response);
    if(response.statusCode!=200){
     throw Exception('Something went wrong ${response.statusMessage}');
   }

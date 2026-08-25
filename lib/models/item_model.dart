@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Item {
-  final int userId;
+  final int? userId;
   final String type;
   final String category;
   final String name;
@@ -17,7 +17,7 @@ class Item {
 
 
   Item({
-    required this.userId,
+     this.userId,
     required this.type,
     required this.category,
     required this.name,
@@ -33,6 +33,7 @@ class Item {
 });
 
   Map<String , dynamic> toJson()=>{
+    'userId' : userId,
     'type':type,
     'category':category,
     'name':name,

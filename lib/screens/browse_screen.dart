@@ -24,15 +24,10 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(itemProvider);
+    final state = ref.watch(itemNotifier);
 
 // Combined category and type filter
-    final filteredItems = state.items.where((c) {
-      final matchesCategory = selectedCategory == 'All' ||
-          c.category == selectedCategory;
-      final matchesType = selectedType == 'All' || c.type == selectedType;
-      return matchesCategory && matchesType;
-    }).toList();
+
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -103,24 +98,42 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
 
 // ── Results ──────────────────────────────────
           Expanded(
-            child: state.isLoading
-                ? const Center(
+            child: state.when(
+            loading: ()=>
+                 const Center(
               child: CircularProgressIndicator(color: AppColors.teal),
-            )
-                : filteredItems.isEmpty
-                ? _buildEmptyState()
-                : Card(
-              color: AppColors.surface,
-              child: ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredItems.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, i) =>
-                    BrowseItemCard(item: filteredItems[i]),
-              ),
             ),
-          ),
-        ],
+            error: (error, stackTrace) => Center(
+            child: Text(
+            'Une erreur est survenue : $error',
+              style: const TextStyle(color: Colors.red),
+                  ),
+                    ),
+// Quand les données sont prêtes (items contient la liste brute reçue)
+          data : (items) {
+    final filteredItems = items.where((c) {
+    final matchesCategory = selectedCategory == 'All' ||
+    c.category == selectedCategory;
+    final matchesType = selectedType == 'All' || c.type == selectedType;
+    return matchesCategory && matchesType;
+    }).toList();
+
+    if (filteredItems.isEmpty){
+    return _buildEmptyState();
+    }
+
+    return Card(
+    color: AppColors.surface,
+    child: ListView.separated(
+    padding: const EdgeInsets.all(16),
+    itemCount: filteredItems.length,
+    separatorBuilder: (_, __) => const SizedBox(height: 12),
+    itemBuilder: (context, i) =>
+    BrowseItemCard(item: filteredItems[i]),
+    ),
+    );
+    }),
+          )],
       ),
     );
   }
