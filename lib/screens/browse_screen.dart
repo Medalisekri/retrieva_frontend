@@ -105,7 +105,7 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
             ),
             error: (error, stackTrace) => Center(
             child: Text(
-            'Une erreur est survenue : $error',
+            'Something went wrong : $error',
               style: const TextStyle(color: Colors.red),
                   ),
                     ),

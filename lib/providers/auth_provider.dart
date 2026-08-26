@@ -14,7 +14,7 @@ class AuthNotifier extends AsyncNotifier<void> {
 
    AuthRepository get _repository => ref.read(authRepositoryProvider);
 
-  void signUp({required String email , required String password , required String fullName}) async {
+  Future<void> signUp({required String email , required String password , required String fullName}) async {
   state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
   try {
@@ -24,7 +24,7 @@ class AuthNotifier extends AsyncNotifier<void> {
   }
   });
   }
-   void signIn({required String email , required String password}) async {
+   Future<void> signIn({required String email , required String password}) async {
   state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
      try{
@@ -33,7 +33,7 @@ class AuthNotifier extends AsyncNotifier<void> {
        state = AsyncValue.error(e, StackTrace.current);
      }});
    }
-   void signInWithGoogle() async {
+  Future<void> signInWithGoogle() async {
   state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
      state = const AsyncValue.loading();
@@ -43,7 +43,7 @@ class AuthNotifier extends AsyncNotifier<void> {
        state = AsyncValue.error(e, StackTrace.current);
      }});
    }
-   void resetPassword({required String email}) async{
+  Future<void> resetPassword({required String email}) async{
   state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
     try{
@@ -52,7 +52,7 @@ class AuthNotifier extends AsyncNotifier<void> {
       state = AsyncValue.error(e, StackTrace.current);
     }});
    }
-   void signOut() async{
+  Future<void> signOut() async{
   state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
      try{

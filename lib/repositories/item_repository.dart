@@ -1,7 +1,5 @@
-
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:retrieva/models/item_model.dart';
 
@@ -22,7 +20,6 @@ Future<List<Item>> getItems() async {
   final List<Item> items = [];
   try{
   final  response = await _dio.get('/items/item/' , options: await _authOptions);
-  print(response);
    if(response.statusCode!=200){
     throw Exception('Something went wrong ${response.statusMessage}');
   }

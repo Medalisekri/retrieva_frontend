@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/auth_provider.dart';
 import '../core/theme/apptheme.dart';
 import '../core/widgets/labled_field.dart';
@@ -173,7 +175,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             style: TextStyle(
                                 color: AppColors.textSecondary, fontSize: 13)),
                         GestureDetector(
-                          onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                          onTap: () => context.push(AppRoutes.login),
                           child: const Text('Login',
                               style: TextStyle(
                                   color: AppColors.teal,
@@ -195,7 +197,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-      ref.read(authProvider.notifier).signUp(
+    await ref.read(authProvider.notifier).signUp(
         email: _email.text.trim(),
         fullName: _fullName.text.trim(),
         password: _pass.text,
@@ -230,8 +232,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context);                    // close dialog
-                            Navigator.pushReplacementNamed(context, '/login'); // go to login
+                           context.push(AppRoutes.login);// go to login
                           },
                           child: const Text('Go to Login'),
                         ),
