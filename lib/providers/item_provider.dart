@@ -23,7 +23,13 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
       }
     );
   }
-
+  void addItem(Item item)async {
+    state = const AsyncValue.loading();
+    state =await AsyncValue.guard<List<Item>>(()async {
+      return await _repository.addItem(item);
+    }
+    );
+  }
 
 
 

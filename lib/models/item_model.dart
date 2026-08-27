@@ -10,10 +10,10 @@ class Item {
   final double lat;
   final double long;
   final String status;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final DateTime expiresAt;
-  final bool isReported;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? expiresAt;
+  final bool? isReported;
 
 
   Item({
@@ -26,10 +26,10 @@ class Item {
     required this.lat,
     required this.long,
     required this.status,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.expiresAt,
-    required this.isReported
+     this.createdAt,
+     this.updatedAt,
+     this.expiresAt,
+    this.isReported
 });
 
   Map<String , dynamic> toJson()=>{
@@ -42,9 +42,9 @@ class Item {
     'lat':lat,
     'long':long,
     'status':status,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt':updatedAt.toIso8601String(),
-    'expiresAt':expiresAt.toIso8601String(),
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt':updatedAt?.toIso8601String(),
+    'expiresAt':expiresAt?.toIso8601String(),
     'isReported':isReported,
 
   };

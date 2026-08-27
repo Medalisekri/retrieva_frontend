@@ -28,8 +28,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-  ref.listen(authProvider, (prev , next) {
+    final authState = ref.watch(authNotifier);
+  ref.listen(authNotifier, (prev , next) {
   next.whenOrNull(error: (e ,_)=>ScaffoldMessenger.of(context).showSnackBar
   (SnackBar(content: Text(e.toString())),));});
     return Scaffold(
@@ -159,7 +159,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: (){
-                          ref.read(authProvider.notifier).signInWithGoogle();
+                          ref.read(authNotifier.notifier).signInWithGoogle();
                       }   ,
                         child: authState.isLoading?
 
@@ -197,7 +197,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    await ref.read(authProvider.notifier).signUp(
+    await ref.read(authNotifier.notifier).signUp(
         email: _email.text.trim(),
         fullName: _fullName.text.trim(),
         password: _pass.text,

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/models/profile_model.dart';
 class AuthRepository {
   final Dio _dio = Dio(BaseOptions(
@@ -13,6 +14,15 @@ class AuthRepository {
     return Options(headers: {
       if (token != null) 'Authorization': 'Bearer $token',
     });
+  }
+  //item.firebaseUid == FirebaseAuth.instance.currentUser?.uid
+  Future<void> getCurrentUser() async{
+    final auth = FirebaseAuth.instance;
+    try{
+      final   user = auth.currentUser?.uid;
+    }catch(e){
+      throw Exception(e);
+    }
   }
 Future<void> signUp(String email , String password , String fullName) async{
   try{

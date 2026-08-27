@@ -63,5 +63,5 @@ class AuthNotifier extends AsyncNotifier<void> {
    }
 
 
-} final authProvider = AsyncNotifierProvider<AuthNotifier , void>(
+} final authNotifier = AsyncNotifierProvider<AuthNotifier , void>(
     AuthNotifier.new);

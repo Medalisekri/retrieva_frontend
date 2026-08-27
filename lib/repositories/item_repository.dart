@@ -31,4 +31,20 @@ Future<List<Item>> getItems() async {
   }
 
 }
+  Future<List<Item>> addItem(Item item) async {
+    final List<Item> items = [];
+    try{
+      final  response = await _dio.post('/items/item/' , options: await _authOptions ,data: item);
+      print(response.data);
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+      final List<dynamic> rawData = response.data as List<dynamic>;
+      items.addAll(rawData.map((item)=>Item.fromJson(item as Map<String , dynamic>)).toList());
+      return items;
+        }catch(e){
+      throw Exception('Something went wrong $e');
+    }
+
+  }
 }

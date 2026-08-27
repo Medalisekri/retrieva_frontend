@@ -96,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (!formKey.currentState!.validate()) return;
 
                 setDialogState(() => isLoading = true);
-                await  ref.read(authProvider.notifier).resetPassword(
+                await  ref.read(authNotifier.notifier).resetPassword(
                       email: emailCtrl.text.trim());
                 setDialogState(() => isLoading = false);
                 if (ctx.mounted) {
@@ -131,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
 
-    await ref.read(authProvider.notifier).signIn(
+    await ref.read(authNotifier.notifier).signIn(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
 
@@ -142,8 +142,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    ref.listen(authProvider , (prev , next){
+    final authState = ref.watch(authNotifier);
+    ref.listen(authNotifier , (prev , next){
       if (prev?.isLoading == true && !next.hasError) {
         context.go(AppRoutes.home);
       }
@@ -281,7 +281,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: ()async{
-                         await ref.read(authProvider.notifier).signInWithGoogle();
+                         await ref.read(authNotifier.notifier).signInWithGoogle();
 
                         }   ,
                         child: authState.isLoading?
