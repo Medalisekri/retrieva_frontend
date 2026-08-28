@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/core/services/cloudinary_service.dart';
 import 'package:retrieva/providers/item_provider.dart';
 
@@ -32,11 +34,12 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   File?      _image;
   double? _lat;
   double? _lng;
-  String _type      = 'Lost';   // 'lost' or 'found'
-  String _status = 'Active';
+  String _type      = 'lost';   // 'lost' or 'found'
+  String _status = 'active';
   String _category  = 'Keys';
   bool   _loading   = false;
   DateTime? _selectedDate;
+  XFile? _pickedFile;
 
   final List<String> _categories = [
     'Keys', 'Wallet', 'Phone', 'Bag', 'Documents',
@@ -69,16 +72,15 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
       source: ImageSource.gallery,
       imageQuality: 75,
     );
+
     if (picked == null) return;
 
-    if (kIsWeb) {
-      // Web — read as bytes
-      final bytes = await picked.readAsBytes();
-      setState(() => _webImage = bytes);
-    } else {
-      // Mobile
-      setState(() => _image = File(picked.path));
-    }
+    setState(() {
+      _pickedFile = picked;
+
+      _image = File(picked.path);
+
+    });
   }
   // ── Pick date ─────────────────────────────────────────
   Future<void> _pickDate() async {
@@ -104,19 +106,31 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   }
 
   // ── Submit ────────────────────────────────────────────
-  Future<void> _submit(Item item) async {
+  Future<void> _submit() async {
+    double normalizeCoordinate(double value) {
+      return double.parse(value.toStringAsFixed(7));
+    }
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    ref.read(itemNotifier.notifier).addItem(item);
+
 String? imageUrl;
 final cloudinary =  CloudinaryService();
-if (kIsWeb && _webImage != null) {
-imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , folder: 'retrieva/items');
-} else if (_image != null) {
-imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , folder: 'retrieva/items');
-}
+    if (_pickedFile != null) {
+      final bytes = await _pickedFile!.readAsBytes();
 
-}
+      imageUrl = await cloudinary.uploadBytes(
+        bytes,
+        folder: 'retrieva/items',
+        filename: _pickedFile!.name,
+      );
+    }
+
+final newItem = Item
+  (type: _type, category: _category, name: _nameCtrl.text.trim(), imgUrl: 'efefef',
+    description: _descCtrl.text.trim(), lat: normalizeCoordinate(_lat!), long: normalizeCoordinate(_lng!),
+    status:_status , incidentDate: _selectedDate!.toIso8601String().split('T')[0],  isReported: false);
+    ref.read(itemNotifier.notifier).addItem(newItem);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +207,7 @@ imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , fol
               GestureDetector(
                 onTap: () async {
                   // ✅ Safe cast — never force cast Navigator result
-                  final raw    = await Navigator.pushNamed(context, '/pick-location');
+                  final raw    = await context.push(AppRoutes.map);
                   final result = raw is Map ? Map<String, dynamic>.from(raw) : null;
 
                   if (result != null) {
@@ -274,10 +288,7 @@ imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , fol
                 height: 52,
                 child: ElevatedButton(
                   onPressed: itemState.isLoading ? null : (){if (_formKey.currentState!.validate()){
-                    final newItem = Item
-                        (type: _type, category: _category, name: _nameCtrl.text.trim(), imgUrl: '',
-                        description: _descCtrl.text.trim(), lat: _lat!, long: _lng!,
-                        status:_status ,  expiresAt: null, isReported: false); _submit(newItem);}},
+                     _submit();}},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.teal,
                     foregroundColor: Colors.white,
@@ -285,7 +296,7 @@ imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , fol
                         borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
-                  child: _loading
+                  child: itemState.isLoading
                       ? const SizedBox(
                       height: 20, width: 20,
                       child: CircularProgressIndicator(
@@ -314,8 +325,8 @@ imageUrl = await cloudinary.pickAndUploadImage(source: ImageSource.gallery , fol
         border: Border.all(color: AppColors.border),
       ),
       child: Row(children: [
-        _typeTab('Lost', 'Lost Item'),
-        _typeTab('Found', 'Found Item'),
+        _typeTab('lost', 'Lost Item'),
+        _typeTab('found', 'Found Item'),
       ]),
     );
   }

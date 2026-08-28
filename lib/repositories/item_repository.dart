@@ -31,19 +31,22 @@ Future<List<Item>> getItems() async {
   }
 
 }
-  Future<List<Item>> addItem(Item item) async {
-    final List<Item> items = [];
+  Future<Item> addItem(Item item) async {
+
     try{
-      final  response = await _dio.post('/items/item/' , options: await _authOptions ,data: item);
-      print(response.data);
+      final  response = await _dio.post('/items/item/' , options: await _authOptions ,data: item.toJson());
+      print('STATUS: ${response.statusCode}');
+      print('DATA: ${response.data}');
       if(response.statusCode!=200){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
-      final List<dynamic> rawData = response.data as List<dynamic>;
-      items.addAll(rawData.map((item)=>Item.fromJson(item as Map<String , dynamic>)).toList());
-      return items;
-        }catch(e){
-      throw Exception('Something went wrong $e');
+
+      return Item.fromJson(response.data as Map<String , dynamic>);
+        }on DioException catch (e) {
+      print('PAYLOAD: ${e.requestOptions.data}');
+      print('ERROR STATUS: ${e.response?.statusCode}');
+      print('ERROR BODY: ${e.response?.data}');
+      rethrow;
     }
 
   }

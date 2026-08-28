@@ -24,9 +24,11 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
     );
   }
   void addItem(Item item)async {
+    final currentItems = state.value?? [];
     state = const AsyncValue.loading();
-    state =await AsyncValue.guard<List<Item>>(()async {
-      return await _repository.addItem(item);
+    state =await AsyncValue.guard(()async {
+      final newItem = await _repository.addItem(item);
+          return [...currentItems , newItem];
     }
     );
   }

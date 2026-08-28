@@ -5,6 +5,7 @@ import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/screens/browse_screen.dart';
 
 import 'package:retrieva/screens/login_screen.dart';
+import 'package:retrieva/screens/pick_loc_screen.dart';
 import 'package:retrieva/screens/signup_screen.dart';
 
 import '../../screens/post_item_screen.dart';
@@ -28,7 +29,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.items,
         builder: (context, state) => const BrowseScreen(),
-      )
+      ),
+      GoRoute(
+        path: AppRoutes.map,
+        builder: (context, state) => const LocationPickerScreen(),
+      ),
     ],
   );
 });
