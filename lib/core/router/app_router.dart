@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/screens/browse_screen.dart';
+import 'package:retrieva/screens/home_screen.dart';
 
 import 'package:retrieva/screens/login_screen.dart';
 import 'package:retrieva/screens/pick_loc_screen.dart';
@@ -23,7 +24,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.home,
+        path: AppRoutes.post,
         builder: (context, state) => const PostItemScreen(),
       ),
       GoRoute(
@@ -33,6 +34,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.map,
         builder: (context, state) => const LocationPickerScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (context, state) => const HomeScreen(),
       ),
     ],
   );

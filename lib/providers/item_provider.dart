@@ -10,31 +10,49 @@ final itemRepositoryProvider = Provider<ItemRepository>((ref)
 
 class ItemNotifier extends AsyncNotifier<List<Item>> {
   @override
-  Future<List<Item>> build() async{
-  return _repository.getItems();
+  Future<List<Item>> build() async {
+    return _repository.getItems();
   }
+
   ItemRepository get _repository => ref.read(itemRepositoryProvider);
 
 
-  void loadItems()async {
+  void loadItems() async {
     state = const AsyncValue.loading();
-    state =await AsyncValue.guard<List<Item>>(()async {
-        return await _repository.getItems();
-      }
-    );
-  }
-  void addItem(Item item)async {
-    final currentItems = state.value?? [];
-    state = const AsyncValue.loading();
-    state =await AsyncValue.guard(()async {
-      final newItem = await _repository.addItem(item);
-          return [...currentItems , newItem];
+    state = await AsyncValue.guard<List<Item>>(() async {
+      return await _repository.getItems();
     }
     );
   }
 
 
 
+  void addItem(Item item) async {
+    final currentItems = state.value ?? [];
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final newItem = await _repository.addItem(item);
+      return [...currentItems, newItem];
+    }
+    );
+  }
+}
+class MyItemsNotifier extends AsyncNotifier<List<Item>> {
+@override
+Future<List<Item>> build() async{
+return _repository.getItems();
+}
+ItemRepository get _repository => ref.read(itemRepositoryProvider);
+void loadMyItems() async {
+  state = const AsyncValue.loading();
+  state = await AsyncValue.guard<List<Item>>(() async {
+    return await _repository.getMyItems();
+  }
+  );
+}
+
 }final itemNotifier = AsyncNotifierProvider<ItemNotifier , List<Item>>(
     ItemNotifier.new
 );
+// In your providers file
+final myItemsNotifier =AsyncNotifierProvider<MyItemsNotifier,List<Item>>(MyItemsNotifier.new);

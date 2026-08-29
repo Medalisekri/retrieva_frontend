@@ -44,7 +44,6 @@ class AuthNotifier extends AsyncNotifier<void> {
      }});
    }
   Future<void> resetPassword({required String email}) async{
-  state = const AsyncLoading();
   state = await AsyncValue.guard(() async {
     try{
       await _repository.resetPassword(email);

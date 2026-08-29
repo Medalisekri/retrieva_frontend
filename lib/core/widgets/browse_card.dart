@@ -64,8 +64,8 @@ class BrowseItemCard extends StatelessWidget {
                     const SizedBox(height: 5),
 
                     // Description
-                    if (item.description.isNotEmpty)
-                      Text(item.description,
+                    if (item.description!.isNotEmpty)
+                      Text(item.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

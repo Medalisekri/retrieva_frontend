@@ -11,6 +11,7 @@ class AuthRepository {
   ));
   Future<Options> get _authOptions async {
     final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    print('PROFILE TOKEN: $token');
     return Options(headers: {
       if (token != null) 'Authorization': 'Bearer $token',
     });
@@ -61,13 +62,15 @@ Future<void> signIn(String email , String password) async {
     data: {'is_verified': true},
     options: await _authOptions,
   );
-  }catch (e){
-    throw Exception('Something went wrong: $e');
+  }on DioException catch (e) {
+    print(e.response?.statusCode);
+    print(e.response?.data);
   }
 }
 
 Future<void> signInWithGoogle() async{
     try {
+
       final googleUser = await GoogleSignIn().signIn();
       final googleAuth = await googleUser?.authentication;
       final credential = GoogleAuthProvider.credential(
@@ -76,9 +79,12 @@ Future<void> signInWithGoogle() async{
       );
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
           credential);
+      final options = await _authOptions;
+      print('AFTER LOGIN HEADERS: ${options.headers}');
       await _dio.patch('accounts/profile/',
           data: {'full_name': userCredential.user?.displayName ?? ''},
-          options: await _authOptions);
+          options: await _authOptions );
+
     }catch(e){
        throw Exception('Something went wrong: $e');
     }
@@ -86,8 +92,9 @@ Future<void> signInWithGoogle() async{
     Future<void> resetPassword(String email) async{
     try{
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-    }catch(e){
-      throw Exception('Something went wrong: $e');
+    }on DioException catch (e) {
+      print(e.response?.statusCode);
+      print(e.response?.data);
     }
     }
 Future<void> signOut() async{

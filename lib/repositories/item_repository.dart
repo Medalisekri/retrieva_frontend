@@ -30,7 +30,27 @@ Future<List<Item>> getItems() async {
     throw Exception('Something went wrong $e');
   }
 
+
 }
+  Future<List<Item>> getMyItems() async {
+    final List<Item> items = [];
+    try{
+      final  response = await _dio.get('/items/my-items/' , options: await _authOptions);
+     print(response.data);
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+      final List<dynamic> rawData = response.data as List<dynamic>;
+      items.addAll(rawData.map((item)=>Item.fromJson(item as Map<String , dynamic>)).toList());
+      return items;
+
+    }catch(e){
+      throw Exception('Something went wrong $e');
+    }
+
+
+  }
+
   Future<Item> addItem(Item item) async {
 
     try{

@@ -96,21 +96,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (!formKey.currentState!.validate()) return;
 
                 setDialogState(() => isLoading = true);
-                await  ref.read(authNotifier.notifier).resetPassword(
+                try {
+                  await ref.read(authNotifier.notifier).resetPassword(
                       email: emailCtrl.text.trim());
-                setDialogState(() => isLoading = false);
-                if (ctx.mounted) {
+
+                  if (ctx.mounted) {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            'Reset link sent to your email, check spam if you do not see it'),
+                      const SnackBar(
+                        content: Text('Reset link sent to your email, check spam if it is not there'),
                         backgroundColor: AppColors.teal,
-                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
-                } ,
+                } catch (e) {
+                  // Handle error locally since we aren't using global state
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
+                    );
+                  }
+                } finally {
+                  if (ctx.mounted) {
+                    setDialogState(() => isLoading = false);
+                  }
+                }
+              },
 
 
               child: isLoading

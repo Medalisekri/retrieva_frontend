@@ -6,7 +6,7 @@ class Item {
   final String category;
   final String name;
   final String? imgUrl;
-  final String description;
+  final String? description;
   final double lat;
   final double long;
   final String status;
@@ -23,7 +23,7 @@ class Item {
     required this.category,
     required this.name,
      this.imgUrl,
-    required this.description,
+     this.description,
     required this.lat,
     required this.long,
     required this.status,
@@ -35,7 +35,7 @@ class Item {
 });
 
   Map<String , dynamic> toJson()=>{
-    'userId' : userId,
+
     'type':type,
     'category':category,
     'name':name,
@@ -54,20 +54,20 @@ class Item {
   bool get isLost => type == 'Lost';
   factory Item.fromJson(Map<String , dynamic> json){
     return Item(
-      userId: json['userId'],
-      type: json['type'],
-      category: json['category'],
-      name: json['name'],
-      imgUrl: json['img_url'],
-      description: json['description'],
-      lat:double.parse( json['lat'].toString()),
+      userId: json['user_id'],
+      type: json['type'] ?? '',
+      category: json['category'] ?? '',
+      name: json['name']?? '',
+      imgUrl: json['img_url']?? '',
+      description: json['description'] ?? '',
+      lat:double.parse( json['lat'].toString()) ,
       long: double.parse(json['long'].toString()),
-      status: json['status'],
-      incidentDate: json['date'],
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      status: json['status']?? '',
+      incidentDate: json['date']?? '',
+      createdAt:  DateTime.parse(json['created_at']as String).toLocal() ,
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
-      expiresAt: DateTime.parse(json['expires_at'] as String).toLocal(),
-      isReported: json['is_reported']
+      expiresAt: json['expires_at'] !=null ? DateTime.parse(json['expires_at']as String).toLocal() :null,
+      isReported: json['is_reported'] ?? ''
     );
   }
 
