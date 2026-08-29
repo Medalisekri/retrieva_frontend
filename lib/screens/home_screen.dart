@@ -141,7 +141,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return _buildEmptyState(context, type);
     }
 
-    return ListView.builder(
+    return
+      ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -149,6 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: ListingCard(item: items[index]),
         );
+
       },
     );
   }

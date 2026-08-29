@@ -9,6 +9,7 @@ class ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/item-detail',
           arguments: item),

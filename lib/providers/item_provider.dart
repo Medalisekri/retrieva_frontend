@@ -38,18 +38,56 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
   }
 }
 class MyItemsNotifier extends AsyncNotifier<List<Item>> {
-@override
-Future<List<Item>> build() async{
-return _repository.getItems();
-}
-ItemRepository get _repository => ref.read(itemRepositoryProvider);
-void loadMyItems() async {
-  state = const AsyncValue.loading();
-  state = await AsyncValue.guard<List<Item>>(() async {
-    return await _repository.getMyItems();
+  @override
+  Future<List<Item>> build() async {
+    return _repository.getItems();
   }
-  );
-}
+
+  ItemRepository get _repository => ref.read(itemRepositoryProvider);
+
+  void loadMyItems() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<Item>>(() async {
+      return await _repository.getMyItems();
+    }
+    );
+  }
+
+  void editMyItem(Item item, int id) async {
+    final currentItems = state.value ?? [];
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<Item>>(() async {
+      final editedItem = await _repository.editItem(item, id);
+      return [...currentItems, editedItem];
+    }
+    );
+  }
+
+  void deleteMyItem(int id) async {
+    final currentItems = state.value ?? [];
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<Item>>(() async {
+      await _repository.deleteItem(id);
+      return currentItems.where((item) => item.id != id).toList();
+    }
+    );
+  }
+
+  void markAsResolved(Item item) async {
+    final currentItems = state.value ?? [];
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<Item>>(() async {
+      await _repository.markAsResolved(item.id!, {
+        'status': 'resolved'
+      });
+      return currentItems.map((i) =>
+      i.id == item.id ?
+      i.copyWith(status: 'resolved')
+          : i).toList();
+    });
+  }
+
+
 
 }final itemNotifier = AsyncNotifierProvider<ItemNotifier , List<Item>>(
     ItemNotifier.new

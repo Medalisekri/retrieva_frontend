@@ -70,4 +70,59 @@ Future<List<Item>> getItems() async {
     }
 
   }
+  Future<Item> editItem(Item item , int id) async {
+
+    try{
+      final  response = await _dio.patch('/items/item/$id/' , options: await _authOptions ,data: item.toJson());
+      print('STATUS: ${response.statusCode}');
+      print('DATA: ${response.data}');
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+
+      return Item.fromJson(response.data as Map<String , dynamic>);
+    }on DioException catch (e) {
+      print('PAYLOAD: ${e.requestOptions.data}');
+      print('ERROR STATUS: ${e.response?.statusCode}');
+      print('ERROR BODY: ${e.response?.data}');
+      rethrow;
+    }
+
+  }
+  Future<void> deleteItem(int id) async {
+
+    try{
+      final  response = await _dio.delete('/items/item/$id/' , options: await _authOptions);
+      print('STATUS: ${response.statusCode}');
+      print('DATA: ${response.data}');
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+
+    }on DioException catch (e) {
+      print('PAYLOAD: ${e.requestOptions.data}');
+      print('ERROR STATUS: ${e.response?.statusCode}');
+      print('ERROR BODY: ${e.response?.data}');
+      rethrow;
+    }
+
+  }
+  Future<void> markAsResolved(int id , Map<String , String> data) async {
+
+    try{
+      final  response = await _dio.patch('/items/item/$id/' , options: await _authOptions , data: data);
+      print('STATUS: ${response.statusCode}');
+      print('DATA: ${response.data}');
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+
+    }on DioException catch (e) {
+      print('PAYLOAD: ${e.requestOptions.data}');
+      print('ERROR STATUS: ${e.response?.statusCode}');
+      print('ERROR BODY: ${e.response?.data}');
+      rethrow;
+    }
+
+  }
 }
