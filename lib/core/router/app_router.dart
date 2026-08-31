@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:retrieva/core/router/app_routes.dart';
+import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/screens/browse_screen.dart';
 import 'package:retrieva/screens/home_screen.dart';
 
 import 'package:retrieva/screens/login_screen.dart';
+import 'package:retrieva/screens/my_items_screen.dart';
 import 'package:retrieva/screens/pick_loc_screen.dart';
 import 'package:retrieva/screens/signup_screen.dart';
 
@@ -24,8 +26,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.post,
-        builder: (context, state) => const PostItemScreen(),
+        path: AppRoutes.edit,
+        builder: (context, state) {
+          final item = state.extra as Item?;
+
+        return PostItemScreen(existingItem: item,);}
+      ),
+      GoRoute(
+          path: AppRoutes.post,
+          builder: (context, state) =>
+
+
+            const PostItemScreen()
       ),
       GoRoute(
         path: AppRoutes.items,
@@ -38,6 +50,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.home,
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.listing,
+        builder: (context, state) => const MyListingsScreen(),
       ),
     ],
   );

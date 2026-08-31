@@ -93,6 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          ElevatedButton(onPressed: (){context.push(AppRoutes.listing);}, child: Text('View all')),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

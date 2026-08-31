@@ -17,7 +17,7 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
   ItemRepository get _repository => ref.read(itemRepositoryProvider);
 
 
-  void loadItems() async {
+  Future<void> loadItems() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
       return await _repository.getItems();
@@ -27,7 +27,7 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
 
 
 
-  void addItem(Item item) async {
+  Future<void> addItem(Item item) async {
     final currentItems = state.value ?? [];
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -45,7 +45,7 @@ class MyItemsNotifier extends AsyncNotifier<List<Item>> {
 
   ItemRepository get _repository => ref.read(itemRepositoryProvider);
 
-  void loadMyItems() async {
+  Future<void> loadMyItems() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
       return await _repository.getMyItems();
@@ -53,27 +53,27 @@ class MyItemsNotifier extends AsyncNotifier<List<Item>> {
     );
   }
 
-  void editMyItem(Item item, int id) async {
+  Future<void> editMyItem(Item item) async {
     final currentItems = state.value ?? [];
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
-      final editedItem = await _repository.editItem(item, id);
+      final editedItem = await _repository.editItem(item);
       return [...currentItems, editedItem];
     }
     );
   }
 
-  void deleteMyItem(int id) async {
+  Future<void> deleteMyItem( Item item) async {
     final currentItems = state.value ?? [];
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
-      await _repository.deleteItem(id);
-      return currentItems.where((item) => item.id != id).toList();
+      await _repository.deleteItem(item.id!);
+      return currentItems.where((i) => i.id != item.id).toList();
     }
     );
   }
 
-  void markAsResolved(Item item) async {
+  Future<void> markAsResolved(Item item) async {
     final currentItems = state.value ?? [];
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {

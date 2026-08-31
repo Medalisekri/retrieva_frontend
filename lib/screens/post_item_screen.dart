@@ -17,7 +17,8 @@ import '../core/theme/apptheme.dart';
 import '../models/item_model.dart';
 
 class PostItemScreen extends ConsumerStatefulWidget {
-  const PostItemScreen({super.key});
+final Item? existingItem;
+  const PostItemScreen({super.key, this.existingItem});
 
   @override
   ConsumerState<PostItemScreen> createState() => _PostItemScreenState();
@@ -25,11 +26,12 @@ class PostItemScreen extends ConsumerStatefulWidget {
 
 
 class _PostItemScreenState extends ConsumerState<PostItemScreen> {
+  String? _networkImageUrl;
   final _formKey    = GlobalKey<FormState>();
   final _nameCtrl   = TextEditingController();
   final _descCtrl   = TextEditingController();
   final _locCtrl    = TextEditingController();
-  final _dateCtrl   = TextEditingController();
+  var _dateCtrl   = TextEditingController();
   Uint8List? _webImage;   // ← for web preview
   File?      _image;
   double? _lat;
@@ -49,10 +51,46 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   @override
   void initState() {
     super.initState();
-    // Read argument passed from quick action ('lost' or 'found')
+
+    if (widget.existingItem != null) {
+      final item = widget.existingItem!;
+
+      // 1. Text Fields
+      _nameCtrl.text = item.name;
+      _descCtrl.text = item.description ?? '';
+
+      // 2. Dropdowns / Switchers
+      _type = item.type;
+      _category = item.category;
+      _status = item.status;
+
+      // 3. LOCATION: Set variables AND update the text controller
+      _lat = item.lat;
+      _lng = item.long;
+      if (_lat != null && _lng != null) {
+        // Show coordinates in the location text field
+        _locCtrl.text = '${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}';
+      }
+
+      // 4. DATE: Parse the date AND update the text controller
+      if (item.incidentDate != null && item.incidentDate!.isNotEmpty) {
+        _selectedDate = DateTime.tryParse(item.incidentDate!);
+        if (_selectedDate != null) {
+          // Format it back to "dd MMM yyyy" for the UI
+          _dateCtrl.text = DateFormat('dd MMM yyyy').format(_selectedDate!);
+        }
+      }
+
+      // 5. IMAGE: Save the URL to the new state variable
+      _networkImageUrl = item.imgUrl;
+    }
+
+    // Keep your quick action logic if you still use it
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final arg = ModalRoute.of(context)?.settings.arguments as String?;
-      if (arg != null) setState(() => _type = arg);
+      if (arg != null && widget.existingItem == null) { // Only override if NOT editing
+        setState(() => _type = arg);
+      }
     });
   }
 
@@ -68,18 +106,12 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   // ── Pick image ────────────────────────────────────────
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 75,
-    );
-
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
     if (picked == null) return;
 
     setState(() {
-      _pickedFile = picked;
-
-      _image = File(picked.path);
-
+      _pickedFile = picked;       // Save the XFile
+      _networkImageUrl = null;    // Clear old network image
     });
   }
   // ── Pick date ─────────────────────────────────────────
@@ -107,31 +139,69 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
 
   // ── Submit ────────────────────────────────────────────
   Future<void> _submit() async {
-    double normalizeCoordinate(double value) {
-      return double.parse(value.toStringAsFixed(7));
-    }
     if (!_formKey.currentState!.validate()) return;
+    if (_lat == null || _lng == null || _selectedDate == null) return;
+
     setState(() => _loading = true);
 
-String? imageUrl;
-final cloudinary =  CloudinaryService();
-    if (_pickedFile != null) {
-      final bytes = await _pickedFile!.readAsBytes();
+    try {
+      // 1. Determine Image URL
+      String? finalImageUrl = _networkImageUrl; // Start with existing image (if editing)
 
-      imageUrl = await cloudinary.uploadBytes(
-        bytes,
-        folder: 'retrieva/items',
-        filename: _pickedFile!.name,
+      if (_pickedFile != null) {
+        final cloudinary = CloudinaryService();
+
+        // Read bytes directly from the XFile (safe from cache cleanup)
+        final bytes = await _pickedFile!.readAsBytes();
+
+        finalImageUrl = await cloudinary.uploadBytes(
+          bytes,
+          folder: 'retrieva/items',
+          filename: _pickedFile!.name,
+        );
+
+        if (finalImageUrl == null) {
+          throw Exception('Image upload failed');
+        }
+      }
+
+      // 2. Build the Item
+      final itemData = Item(
+        id: widget.existingItem?.id, // 👈 Crucial for Edit mode!
+        type: _type,
+        category: _category,
+        name: _nameCtrl.text.trim(),
+        imgUrl: finalImageUrl, // 👈 Use the real URL
+        description: _descCtrl.text.trim(),
+        lat: double.parse(_lat!.toStringAsFixed(7)),
+        long: double.parse(_lng!.toStringAsFixed(7)),
+        status: _status,
+        incidentDate: _selectedDate!.toIso8601String().split('T')[0],
+        isReported: false
       );
+
+      // 3. Send to API
+      if (widget.existingItem != null) {
+        // 🟢 EDIT MODE (PATCH)
+        await ref.read(myItemsNotifier.notifier).editMyItem(itemData);
+      } else {
+        // 🔵 CREATE MODE (POST)
+        await ref.read(itemNotifier.notifier).addItem(itemData);
+      }
+
+      // 4. Close screen
+      if (mounted) Navigator.pop(context);
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-
-final newItem = Item
-  (type: _type, category: _category, name: _nameCtrl.text.trim(), imgUrl: 'efefef',
-    description: _descCtrl.text.trim(), lat: normalizeCoordinate(_lat!), long: normalizeCoordinate(_lng!),
-    status:_status , incidentDate: _selectedDate!.toIso8601String().split('T')[0],  isReported: false);
-    ref.read(itemNotifier.notifier).addItem(newItem);
   }
-
   @override
   Widget build(BuildContext context) {
     final itemState =ref.watch(itemNotifier);
@@ -356,9 +426,10 @@ final newItem = Item
   }
 
   // ── Photo Picker ──────────────────────────────────────
-  Widget _buildPhotoPicker() {
-    // Decide which image to show
-    final hasImage = kIsWeb ? _webImage != null : _image != null;
+    Widget _buildPhotoPicker() {
+    final hasLocalImage = _image != null;
+    final hasNetworkImage = !hasLocalImage && _networkImageUrl != null && _networkImageUrl!.isNotEmpty;
+    final hasAnyImage = hasLocalImage || hasNetworkImage;
 
     return GestureDetector(
       onTap: _pickImage,
@@ -369,16 +440,33 @@ final newItem = Item
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasImage ? AppColors.teal : AppColors.border,
-            width: hasImage ? 1.5 : 1,
+            color: hasAnyImage ? AppColors.teal : AppColors.border,
+            width: hasAnyImage ? 1.5 : 1,
           ),
         ),
-        child: hasImage
+        child: hasAnyImage
             ? ClipRRect(
           borderRadius: BorderRadius.circular(11),
-          child: kIsWeb
-              ? Image.memory(_webImage!, fit: BoxFit.cover)
-              : Image.file(_image!, fit: BoxFit.cover),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Show Local OR Network image
+              if (hasLocalImage)
+                Image.file(_image!, fit: BoxFit.cover)
+              else if (hasNetworkImage)
+                Image.network(_networkImageUrl!, fit: BoxFit.cover),
+
+              // "Change" badge
+              Positioned(
+                bottom: 8, right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(6)),
+                  child: const Text('Change', style: TextStyle(color: Colors.white, fontSize: 11)),
+                ),
+              )
+            ],
+          ),
         )
             : Column(
           mainAxisAlignment: MainAxisAlignment.center,

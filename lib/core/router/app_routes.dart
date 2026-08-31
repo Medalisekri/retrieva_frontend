@@ -8,7 +8,9 @@ class AppRoutes {
   static const String signup = '/signup';
   static const String guestHome = '/guest/home';
   // HomeOwner layout
+  static const String listing = '/my-listing';
   static const String post = '/post-item';
+  static const String edit = '/edit-item';
   static const String home = '/home';
   static const String map = '/pick-loca';
   static const String userBooking = '/user/booking';

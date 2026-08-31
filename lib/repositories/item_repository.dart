@@ -70,10 +70,10 @@ Future<List<Item>> getItems() async {
     }
 
   }
-  Future<Item> editItem(Item item , int id) async {
+  Future<Item> editItem(Item item ) async {
 
     try{
-      final  response = await _dio.patch('/items/item/$id/' , options: await _authOptions ,data: item.toJson());
+      final  response = await _dio.patch('/items/item/${item.id}/' , options: await _authOptions ,data: item.toJson());
       print('STATUS: ${response.statusCode}');
       print('DATA: ${response.data}');
       if(response.statusCode!=200){
