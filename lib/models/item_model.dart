@@ -67,7 +67,7 @@ class Item {
       lat:double.parse( json['lat'].toString()) ,
       long: double.parse(json['long'].toString()),
       status: json['status']?? '',
-      incidentDate: json['date']?? '',
+      incidentDate: json['incident_date']?? '',
       createdAt:  DateTime.parse(json['created_at']as String).toLocal() ,
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
       expiresAt: json['expires_at'] !=null ? DateTime.parse(json['expires_at']as String).toLocal() :null,
