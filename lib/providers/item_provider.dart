@@ -52,6 +52,11 @@ class MyItemsNotifier extends AsyncNotifier<List<Item>> {
     }
     );
   }
+  Future<Item> loadItemDetail(int id) async {
+
+     return  await _repository.getItemDetail(id);
+
+         }
 
   Future<void> editMyItem(Item item) async {
     final currentItems = state.value ?? [];

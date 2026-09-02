@@ -22,6 +22,7 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
     'Documents', 'Jewelry', 'Glasses', 'Electronics', 'Clothing', 'Other',
   ];
 
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(itemNotifier);

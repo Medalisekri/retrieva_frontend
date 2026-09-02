@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Item {
+  final bool? isOwner;
   final int? id;
   final int? userId;
   final String type;
@@ -16,9 +17,11 @@ class Item {
   final DateTime? updatedAt;
   final DateTime? expiresAt;
   final bool? isReported;
+  final String? posterName;
 
 
   Item({
+   this.isOwner,
      this.id,
      this.userId,
     required this.type,
@@ -33,7 +36,8 @@ class Item {
      this.createdAt,
      this.updatedAt,
      this.expiresAt,
-    this.isReported
+    this.isReported,
+    this.posterName
 });
 
 
@@ -57,6 +61,7 @@ class Item {
   bool get isLost => type == 'Lost';
   factory Item.fromJson(Map<String , dynamic> json){
     return Item(
+      isOwner: json['is_owner'],
       id: json['id'],
       userId: json['user_id'],
       type: json['type'] ?? '',
@@ -71,7 +76,8 @@ class Item {
       createdAt:  DateTime.parse(json['created_at']as String).toLocal() ,
       updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
       expiresAt: json['expires_at'] !=null ? DateTime.parse(json['expires_at']as String).toLocal() :null,
-      isReported: json['is_reported'] ?? ''
+      isReported: json['is_reported'] ?? '',
+      posterName: json['poster_name']   ?? ''
     );
   }
 
@@ -83,6 +89,7 @@ class Item {
     String? name,
     double? lat,
     double? long,
+
 
   }){return Item(type: type ?? this.type , category:category ?? this.category ,
       name: name ??this.name, lat: lat ?? this.lat, long:long ?? this.long, status: status ?? this.status

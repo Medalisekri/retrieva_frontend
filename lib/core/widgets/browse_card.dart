@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/apptheme.dart';
 import '../../models/item_model.dart';
+import '../router/app_routes.dart';
 
 class BrowseItemCard extends StatelessWidget {
   final Item item;
@@ -10,8 +12,11 @@ class BrowseItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          Navigator.pushNamed(context, '/item-detail', arguments: item),
+      onTap: () async {
+        await context.push(AppRoutes.detail,
+            extra: item);
+
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

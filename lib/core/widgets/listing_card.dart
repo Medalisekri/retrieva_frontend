@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/item_model.dart';
+import '../router/app_routes.dart';
 import '../theme/apptheme.dart';
 
 class ListingCard extends StatelessWidget {
@@ -11,8 +13,11 @@ class ListingCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/item-detail',
-          arguments: item),
+      onTap: () async {
+        await context.push(AppRoutes.detail,
+            extra: item);
+
+      },
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(

@@ -37,6 +37,7 @@ Future<List<Item>> getItems() async {
     try{
       final  response = await _dio.get('/items/my-items/' , options: await _authOptions);
      print(response.data);
+      print('RAW RESPONSE: ${response.data}');
       if(response.statusCode!=200){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
@@ -50,6 +51,26 @@ Future<List<Item>> getItems() async {
 
 
   }
+  Future<Item> getItemDetail(int id) async {
+
+    try{
+      final  response = await _dio.get('/items/item/$id/' , options: await _authOptions);
+
+      print(response.data);
+      print('RAW RESPONSE: ${response.data}');
+      if(response.statusCode!=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+
+      return Item.fromJson(response.data);
+
+    }catch(e){
+      throw Exception('Something went wrong $e');
+    }
+
+
+  }
+
 
   Future<Item> addItem(Item item) async {
 

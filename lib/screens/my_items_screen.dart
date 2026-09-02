@@ -242,7 +242,18 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
   Widget _buildCard(Item item) {
     final isResolved = item.status == 'resolved';
 
-    return Container(
+    return GestureDetector(
+        onTap: () async {
+          await context.push(AppRoutes.detail,
+              extra: item);
+
+        },
+    child: ClipRRect(
+           borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(14),
+          bottomLeft: Radius.circular(14),
+        ),
+   child:  Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -258,18 +269,7 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            GestureDetector(
-              onTap: () async {
-                await Navigator.pushNamed(context, '/item-detail',
-                    arguments: item);
-
-              },
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  bottomLeft: Radius.circular(14),
-                ),
-                child: SizedBox(
+                 SizedBox(
                   width: 90, height: 110,
                   child: item.imgUrl?.isNotEmpty == true
                       ? Image.network(item.imgUrl ?? '' ,
@@ -277,8 +277,8 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
                       errorBuilder: (_, __, ___) => _placeholder(item))
                       : _placeholder(item),
                 ),
-              ),
-            ),
+
+
 
             // Info
             Expanded(
@@ -435,7 +435,7 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
           ],
         ),
       ),
-    );
+    )));
   }
 
   // ── Filter tabs ───────────────────────────────────────

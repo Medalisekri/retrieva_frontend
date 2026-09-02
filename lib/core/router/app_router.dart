@@ -5,6 +5,7 @@ import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/screens/browse_screen.dart';
 import 'package:retrieva/screens/home_screen.dart';
+import 'package:retrieva/screens/item_details_screen.dart';
 
 import 'package:retrieva/screens/login_screen.dart';
 import 'package:retrieva/screens/my_items_screen.dart';
@@ -38,6 +39,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 
             const PostItemScreen()
+      ),
+      GoRoute(
+          path: AppRoutes.detail,
+          builder: (context, state) {
+            final item = state.extra as Item?;
+
+            return ItemDetailScreen(item: item,);}
       ),
       GoRoute(
         path: AppRoutes.items,

@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/models/profile_model.dart';
+import 'package:retrieva/providers/auth_provider.dart';
 class AuthRepository {
   final Dio _dio = Dio(BaseOptions(
     baseUrl: dotenv.env['ITEM_URL']!,
@@ -46,7 +48,7 @@ Future<void> signUp(String email , String password , String fullName) async{
   }
 }
 
-Future<void> signIn(String email , String password) async {
+Future<void> signIn(String email , String password ) async {
   try {
   final credential =   await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email, password: password);
@@ -55,8 +57,6 @@ Future<void> signIn(String email , String password) async {
       throw Exception('Please verify your email first');
     }
 
-    final response = await _dio.get('accounts/profile' , options: await _authOptions);
-    final profile = ProfileModel.fromJson(response.data);
     await _dio.patch(
     'accounts/profile/',
     data: {'is_verified': true},
@@ -89,6 +89,13 @@ Future<void> signInWithGoogle() async{
        throw Exception('Something went wrong: $e');
     }
     }
+  Future<ProfileModel> fetchProfile() async {
+    final response = await _dio.get(
+      'accounts/profile/',
+      options: await _authOptions,
+    );
+    return ProfileModel.fromJson(response.data);
+  }
     Future<void> resetPassword(String email) async{
     try{
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
@@ -103,5 +110,10 @@ Future<void> signOut() async{
     }catch(e){
       throw Exception('Something went wrong: $e');
     }
+}
+Future<void> getUserInfo() async{
+    try{
+      final response = await _dio.get('accounts/profile' , options: await _authOptions);
+    }catch(e){}
 }
 }
