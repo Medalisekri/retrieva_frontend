@@ -13,7 +13,8 @@ class AppRoutes {
   static const String post = '/post-item';
   static const String edit = '/edit-item';
   static const String home = '/home';
-  static const String map = '/pick-loca';
+  static const String map = '/pick-loc';
+  static const String mapView = '/map-view';
   static const String userBooking = '/user/booking';
   static const String userMessages = '/user/messages';
   static const String userProfile = '/user/profile';

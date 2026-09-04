@@ -94,7 +94,8 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
               ],
             ),
           ),
-
+          const SizedBox(height: 15,),
+          ElevatedButton(onPressed: (){context.push(AppRoutes.mapView);}, child: Text('Map view')),
           const Divider(height: 1, color: AppColors.border),
 
 // ── Results ──────────────────────────────────

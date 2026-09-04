@@ -8,6 +8,7 @@ import 'package:retrieva/screens/home_screen.dart';
 import 'package:retrieva/screens/item_details_screen.dart';
 
 import 'package:retrieva/screens/login_screen.dart';
+import 'package:retrieva/screens/map_screen.dart';
 import 'package:retrieva/screens/my_items_screen.dart';
 import 'package:retrieva/screens/pick_loc_screen.dart';
 import 'package:retrieva/screens/signup_screen.dart';
@@ -62,6 +63,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.listing,
         builder: (context, state) => const MyListingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.mapView,
+        builder: (context, state) => const MapScreen(),
       ),
     ],
   );
