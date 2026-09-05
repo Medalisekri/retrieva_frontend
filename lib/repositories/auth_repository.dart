@@ -8,7 +8,7 @@ import 'package:retrieva/models/profile_model.dart';
 import 'package:retrieva/providers/auth_provider.dart';
 class AuthRepository {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: dotenv.env['ITEM_URL']!,
+    baseUrl: dotenv.env['URL']!,
     headers: {'Content-Type': 'application/json'},
   ));
   Future<Options> get _authOptions async {
@@ -18,7 +18,7 @@ class AuthRepository {
       if (token != null) 'Authorization': 'Bearer $token',
     });
   }
-  //item.firebaseUid == FirebaseAuth.instance.currentUser?.uid
+
   Future<void> getCurrentUser() async{
     final auth = FirebaseAuth.instance;
     try{

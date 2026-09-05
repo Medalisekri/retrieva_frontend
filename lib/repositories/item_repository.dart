@@ -5,7 +5,7 @@ import 'package:retrieva/models/item_model.dart';
 
 class ItemRepository  {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: dotenv.env['ITEM_URL']!,
+    baseUrl: dotenv.env['URL']!,
     headers: {'Content-Type': 'application/json'},
   ));
 

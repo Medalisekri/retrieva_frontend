@@ -1,30 +1,29 @@
-class ConversationModel {
+class Conversation {
   final String id;
   final DateTime createdAt;
 
-  ConversationModel({
+  Conversation({
     required this.id,
     required this.createdAt,
 
   });
 
-
-  factory ConversationModel.fromMap(Map<String, dynamic> json, String id) =>
-      ConversationModel(
-        id: id,
+  factory Conversation.fromJson(Map<String, dynamic> json) =>
+      Conversation(
+        id: json['id'],
         createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       );
 }
 
 
 
-class MessageModel {
+class Message {
   final String id;
   final String text;
   final String? imageUrl;
   final DateTime createdAt;
   final bool isDeleted;
-  MessageModel({
+  Message({
     required this.id,
     required this.text,
     this.imageUrl,
@@ -40,9 +39,9 @@ class MessageModel {
     'is_deleted': isDeleted,
   };
 
-  factory MessageModel.fromMap(Map<String, dynamic> json, String id) =>
-      MessageModel(
-        id:        id,
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      Message(
+        id:        json['id'] ?? '',
         text:      json['text']      ?? '',
         imageUrl:  json['image_url'] ?? '',
         createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
