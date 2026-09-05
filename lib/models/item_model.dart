@@ -52,8 +52,6 @@ class Item {
     'long':long,
     'status':status,
     'incident_date':incidentDate,
-    'created_at': createdAt?.toIso8601String(),
-    'updated_at':updatedAt?.toIso8601String(),
     'expires_at':expiresAt?.toIso8601String(),
     'is_reported':isReported,
 
