@@ -49,8 +49,8 @@ class ChatRepository {
     }
 
   }
-  Future<Conversation> sendMessage(
-      {required int conversationId , required String? text , required String? imgUrl , required int id}) async {
+  Future<Message> sendMessage(
+      {required int conversationId , required String? text , required String? imgUrl ,required int id })  async {
 
     try{
       final  response = await _dio.post('/chats/conversations/$id/messages' , options: await _authOptions ,
@@ -61,7 +61,7 @@ class ChatRepository {
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Conversation.fromJson(response.data as Map<String , dynamic>);
+      return Message.fromJson(response.data as Map<String , dynamic>);
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');
@@ -84,7 +84,7 @@ class ChatRepository {
       throw Exception('Something went wrong $e');
     }
   }
-  Future<Conversation> deleteMessage(int id) async {
+  Future<Message> deleteMessage(int id) async {
 
     try{
       final  response = await _dio.delete('/chats/messages/$id' , options: await _authOptions);
@@ -94,7 +94,7 @@ class ChatRepository {
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Conversation.fromJson(response.data as Map<String , dynamic>);
+      return Message.fromJson(response.data as Map<String , dynamic>);
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');

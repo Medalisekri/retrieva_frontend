@@ -18,7 +18,7 @@ class Conversation {
 
 
 class Message {
-  final String id;
+  final int? id;
   final String text;
   final String? imageUrl;
   final DateTime createdAt;
