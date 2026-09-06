@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 
 import 'package:retrieva/providers/auth_provider.dart';
 import 'package:retrieva/providers/item_provider.dart';
@@ -252,7 +254,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton.icon(
-                       onPressed: (){},
+                       onPressed: (){context.push(AppRoutes.message);},
                         icon: const Icon(
                             Icons.chat_bubble_outline_rounded,
                             size: 18),

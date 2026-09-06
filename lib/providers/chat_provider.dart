@@ -19,6 +19,14 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
     return await  _repository.getConversations();
     });
   }
+  Future<void> getConversation(int conversationId) async {
+    final currentConversations = state.value ?? [];
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<Conversation>>(()async{
+     final newConv =   await  _repository.getConversation(conversationId);
+       return [...currentConversations , newConv];
+    });
+  }
   Future<void> createConversation({required int itemId , required int otherUserId}) async{
     final currentConversations = state.value ?? [];
     state = const AsyncValue.loading();
@@ -28,11 +36,11 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
     });
 
   }
-  Future<void> blockOtherUser({required int id , required int conversationId , required int otherUserId}) async{
+  Future<void> blockOtherUser({ required int conversationId }) async{
 final currentConversations = state.value ?? [];
 state = const AsyncValue.loading();
 state = await AsyncValue.guard<List<Conversation>>(()async{
-  await _repository.blockOtherUser(id: id, conversationId: conversationId, otherUserId: otherUserId);
+  await _repository.blockOtherUser(conversationId);
   return currentConversations.where((i)=>i.id != conversationId.toString()).toList();
 });
   }
@@ -55,12 +63,12 @@ Future<void> getMessages() async {
     return await  _repository.getMessages(id);
   });
 }
-Future<void> sendMessage({required int conversationId , required String text , required String imgUrl , required int id}) async{
+Future<void> sendMessage({required int conversationId , required String text , required String imgUrl }) async{
   final currentMessages = state.value ?? [];
   state = const AsyncValue.loading();
   state = await AsyncValue.guard<List<Message>>(()async{
     final newMessage =   await _repository.sendMessage(conversationId: conversationId,
-        text: text, imgUrl: imgUrl , id: id);
+        text: text, imgUrl: imgUrl);
     return [...currentMessages , newMessage];
   });
 

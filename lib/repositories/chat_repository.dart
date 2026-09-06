@@ -29,6 +29,19 @@ class ChatRepository {
       throw Exception('Something went wrong $e');
     }
   }
+  Future<Conversation> getConversation(int conversationId) async{
+    try{
+      final response = await _dio.get('/chats/conversations/$conversationId' , options:await _authOptions);
+      if(response.statusCode !=200){
+        throw Exception('Something went wrong ${response.statusMessage}');
+      }
+      return Conversation.fromJson(response.data);
+    }on DioException catch(e){
+      throw Exception(e);
+
+    }
+
+  }
   Future<Conversation> createConversation({required int itemId , required int otherUserId}) async {
 
     try{
@@ -40,7 +53,7 @@ class ChatRepository {
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Conversation.fromJson(response.data as Map<String , dynamic>);
+      return Conversation.fromJson(response.data );
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');
@@ -50,10 +63,10 @@ class ChatRepository {
 
   }
   Future<Message> sendMessage(
-      {required int conversationId , required String? text , required String? imgUrl ,required int id })  async {
+      {required int conversationId , required String? text , required String? imgUrl })  async {
 
     try{
-      final  response = await _dio.post('/chats/conversations/$id/messages' , options: await _authOptions ,
+      final  response = await _dio.post('/chats/conversations/$conversationId/messages' , options: await _authOptions ,
           data: {'conversation': conversationId , 'text':text , 'img_url' : imgUrl});
       print('STATUS: ${response.statusCode}');
       print('DATA: ${response.data}');
@@ -61,7 +74,7 @@ class ChatRepository {
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Message.fromJson(response.data as Map<String , dynamic>);
+      return Message.fromJson(response.data );
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');
@@ -70,10 +83,10 @@ class ChatRepository {
     }
 
   }
-  Future<List<Message>> getMessages(int id) async {
+  Future<List<Message>> getMessages(int conversationId) async {
     final List<Message> message = [];
     try{
-      final  response = await _dio.get('/chats/conversations/$id/messages' , options: await _authOptions);
+      final  response = await _dio.get('/chats/conversations/$conversationId/messages' , options: await _authOptions);
       if(response.statusCode!=200){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
@@ -94,7 +107,7 @@ class ChatRepository {
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Message.fromJson(response.data as Map<String , dynamic>);
+      return Message.fromJson(response.data );
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');
@@ -103,19 +116,18 @@ class ChatRepository {
     }
 
   }
-  Future<Conversation> blockOtherUser(
-      {required int id , required int conversationId , required int otherUserId}) async {
+  Future<Conversation> blockOtherUser(int conversationId ) async {
 
     try{
-      final  response = await _dio.post('/chats/conversations/$id/block' , options: await _authOptions ,
-          data: {'conversation':conversationId , 'participant2' : otherUserId});
+      final  response = await _dio.post('/chats/conversations/$conversationId/block' , options: await _authOptions ,
+         );
       print('STATUS: ${response.statusCode}');
       print('DATA: ${response.data}');
       if(response.statusCode!=200){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Conversation.fromJson(response.data as Map<String , dynamic>);
+      return Conversation.fromJson(response.data );
     }on DioException catch (e) {
       print('PAYLOAD: ${e.requestOptions.data}');
       print('ERROR STATUS: ${e.response?.statusCode}');

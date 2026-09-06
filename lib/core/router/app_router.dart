@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/screens/browse_screen.dart';
+import 'package:retrieva/screens/chat_screen.dart';
 import 'package:retrieva/screens/home_screen.dart';
 import 'package:retrieva/screens/item_details_screen.dart';
 
@@ -67,6 +68,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.mapView,
         builder: (context, state) => const MapScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.message,
+        builder: (context, state) => const ChatScreen(),
       ),
     ],
   );
