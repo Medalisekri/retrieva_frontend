@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.example.retrieva"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

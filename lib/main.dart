@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrieva/screens/browse_screen.dart';
+import 'package:retrieva/services/onesignal_service.dart';
 
 import 'core/router/app_router.dart';
 import 'firebase_options.dart';
@@ -29,7 +30,33 @@ class RetrievaApp extends ConsumerWidget {
       title: 'Retrieva',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      builder: (context, child) {
+        return OneSignalInitializer(child: child!);
+      },
     );
+  }
+}
+
+class OneSignalInitializer extends StatefulWidget {
+  final Widget child;
+  const OneSignalInitializer({super.key, required this.child});
+
+  @override
+  State<OneSignalInitializer> createState() => _OneSignalInitializerState();
+}
+
+class _OneSignalInitializerState extends State<OneSignalInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      OneSignalService.init(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
 
