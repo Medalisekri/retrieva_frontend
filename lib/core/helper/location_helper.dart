@@ -1,25 +1,48 @@
-import 'package:flutter/cupertino.dart';
-import 'package:geocoding/geocoding.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 
-Future<String> getAddressFromLatLong(double? lat, double? long) async {
-  try {
-    List<Placemark> placemarks = await placemarkFromCoordinates(lat!, long!);
+class GeocodingService {
+  /// Reverse geocode coordinates to an address string
+  /// Returns coordinates as fallback if geocoding fails
+  static Future<String> getAddressFromCoordinates(LatLng point) async {
+    try {
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse'
+            '?lat=${point.latitude}&lon=${point.longitude}'
+            '&format=json&accept-language=en',
+      );
 
-    if (placemarks.isEmpty) return 'Unknown location';
+      final response = await http.get(url, headers: {
+        'User-Agent': 'RetrievaApp/1.0',
+      });
 
-    final place = placemarks.first;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final address = data['address'] as Map<String, dynamic>? ?? {};
 
-    // Build a readable address string
-    final parts = [
-      place.street,
-      place.subLocality,
-      place.locality,
-      place.administrativeArea,
-    ].where((p) => p != null && p.isNotEmpty);
+        final parts = <String>[];
+        if (address['road'] != null) parts.add(address['road']);
+        if (address['suburb'] != null) parts.add(address['suburb']);
+        if (address['city'] != null) {
+          parts.add(address['city']);
+        } else if (address['town'] != null) {
+          parts.add(address['town']);
+        } else if (address['village'] != null) {
+          parts.add(address['village']);
+        }
 
-    return parts.join(', ');
-  } catch (e) {
-    debugPrint('Geocoding error: $e');
-    return 'Location unavailable';
+        return parts.isNotEmpty
+            ? parts.join(', ')
+            : (data['display_name'] as String?) ?? _coordFallback(point);
+      } else {
+        return _coordFallback(point);
+      }
+    } catch (_) {
+      return _coordFallback(point);
+    }
   }
+
+  static String _coordFallback(LatLng point) =>
+      '${point.latitude.toStringAsFixed(4)}, ${point.longitude.toStringAsFixed(4)}';
 }

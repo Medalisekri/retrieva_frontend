@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/item_model.dart';
 import '../router/app_routes.dart';
-import '../theme/apptheme.dart';
+import '../theme/app_theme.dart';
 
 class ListingCard extends StatelessWidget {
   final Item item;

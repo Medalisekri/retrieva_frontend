@@ -56,25 +56,26 @@ class Item {
     'is_reported':isReported,
 
   };
-  bool get isLost => type == 'Lost';
+
+  bool get isLost => type == 'lost';
   factory Item.fromJson(Map<String , dynamic> json){
     return Item(
       isOwner: json['is_owner'],
       id: json['id'],
-      userId: json['user_id'],
+      userId: json['user'],
       type: json['type'] ?? '',
       category: json['category'] ?? '',
       name: json['name']?? '',
       imgUrl: json['img_url']?? '',
       description: json['description'] ?? '',
-      lat:double.parse( json['lat'].toString()) ,
-      long: double.parse(json['long'].toString()),
+      lat:double.tryParse( json['lat'].toString() ) ?? 0.0 ,
+      long: double.tryParse(json['long'].toString()) ?? 0.0,
       status: json['status']?? '',
       incidentDate: json['incident_date']?? '',
-      createdAt:  DateTime.parse(json['created_at']as String).toLocal() ,
-      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
-      expiresAt: json['expires_at'] !=null ? DateTime.parse(json['expires_at']as String).toLocal() :null,
-      isReported: json['is_reported'] ?? '',
+      createdAt:  DateTime.tryParse(json['created_at']as String) ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String) ?? DateTime.now(),
+      expiresAt: json['expires_at'] !=null ? DateTime.tryParse(json['expires_at']as String) :null,
+      isReported: json['is_reported'] ??false,
       posterName: json['poster_name']   ?? ''
     );
   }

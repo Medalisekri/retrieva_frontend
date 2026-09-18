@@ -1,35 +1,67 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/item_provider.dart';
-import '../core/theme/apptheme.dart';
+import '../core/theme/app_theme.dart';
 import '../core/widgets/browse_card.dart';
+import '../models/item_model.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _BrowseScreen();
-
+  ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
 }
-class _BrowseScreen extends ConsumerState<BrowseScreen> {
+
+class _BrowseScreenState extends ConsumerState<BrowseScreen> {
+  final PagingController<int, Item> _pagingController = PagingController(firstPageKey: 1);
   String selectedCategory = 'All';
   String selectedType = 'All';
   final List<String> categories = [
     'All', 'Keys', 'Wallet', 'Phone', 'Bag',
     'Documents', 'Jewelry', 'Glasses', 'Electronics', 'Clothing', 'Other',
   ];
+  @override
+  void initState() {
+    super.initState();
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
+  }
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
+  }
 
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems = await ref.read(itemRepositoryProvider).getItems(
+        page: pageKey,
+        type: selectedType == 'All' ? null : selectedType.toLowerCase(),
+        category: selectedCategory == 'All' ? null : selectedCategory,
+      );
 
+      final isLastPage = newItems.length < 20;
+
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems );
+      } else {
+        _pagingController.appendPage(newItems , pageKey + 1);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
+  }
+  void _applyFilters() {
+    _pagingController.refresh();
+  }
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(itemNotifier);
-
-// Combined category and type filter
-
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -37,50 +69,75 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        leading: context.canPop()
+            ? IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded, size: 18),
+          onPressed: () => context.pop(),
+        )
+            : null,
         title: const Text(
           'Browse Listings',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-            size: 18,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+
       ),
       body: Column(
         children: [
-          ElevatedButton(onPressed: (){
-            context.push(AppRoutes.signup);
-          }, child: Text('Sign Up')),
-// ── Search + Filters (fixed) ─────────────────
+          if(FirebaseAuth.instance.currentUser == null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push(AppRoutes.login),
+                    icon: const Icon(Icons.person_add_alt_1, size: 16),
+                    label: const Text('Login'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.teal,
+                      side: const BorderSide(color: AppColors.teal),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push(AppRoutes.mapView),
+                    icon: const Icon(Icons.map_outlined, size: 16),
+                    label: const Text('Map View'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.teal,
+                      side: const BorderSide(color: AppColors.teal),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               children: [
-                const SizedBox(height: 12),
-
-// Type tabs — All / Lost / Found
                 Row(
                   children: [
-                    _typeTab('All', selectedType == 'All'),
+                    _typeTab('All', selectedType == 'All' , 'All'),
                     const SizedBox(width: 8),
-                    _typeTab('Lost', selectedType == 'Lost'),
+                    _typeTab('Lost', selectedType == 'Lost' , 'lost'),
                     const SizedBox(width: 8),
-                    _typeTab('Found', selectedType == 'Found'),
+                    _typeTab('Found', selectedType == 'Found' , 'found'),
                   ],
                 ),
-
-                const SizedBox(height: 19),
-
-// Category chips — scrollable
+                const SizedBox(height: 16),
                 SizedBox(
                   height: 34,
                   child: ListView.separated(
@@ -90,62 +147,72 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
                     itemBuilder: (_, i) => _categoryChip(categories[i]),
                   ),
                 ),
-                const SizedBox(height: 14),
               ],
             ),
           ),
-          const SizedBox(height: 15,),
-          ElevatedButton(onPressed: (){context.push(AppRoutes.mapView);}, child: Text('Map view')),
+
           const Divider(height: 1, color: AppColors.border),
 
-// ── Results ──────────────────────────────────
+          // Results
           Expanded(
-            child: state.when(
-            loading: ()=>
-                 const Center(
-              child: CircularProgressIndicator(color: AppColors.teal),
-            ),
-            error: (error, stackTrace) => Center(
-            child: Text(
-            'Something went wrong : $error',
-              style: const TextStyle(color: Colors.red),
+            child: PagedListView<int, Item>.separated(
+              pagingController: _pagingController,
+              padding: const EdgeInsets.all(16),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              builderDelegate: PagedChildBuilderDelegate<Item>(
+                itemBuilder: (context, item, index) => BrowseItemCard(item: item),
+
+                firstPageProgressIndicatorBuilder: (context) => const Center(
+                  child: CircularProgressIndicator(color: AppColors.teal),
+                ),
+
+                newPageProgressIndicatorBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.teal)),
+                ),
+
+
+                firstPageErrorIndicatorBuilder: (context) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Something went wrong'),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => _pagingController.retryLastFailedRequest(),
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
+                ),
+
+                noItemsFoundIndicatorBuilder: (context) => _buildEmptyState(),
+
+                noMoreItemsIndicatorBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: Text(
+                      "You've reached the end!",
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                     ),
-// Quand les données sont prêtes (items contient la liste brute reçue)
-          data : (items) {
-    final filteredItems = items.where((c) {
-    final matchesCategory = selectedCategory == 'All' ||
-    c.category == selectedCategory;
-    final matchesType = selectedType == 'All' || c.type == selectedType;
-    return matchesCategory && matchesType;
-    }).toList();
-
-    if (filteredItems.isEmpty){
-    return _buildEmptyState();
-    }
-
-    return Card(
-    color: AppColors.surface,
-    child: ListView.separated(
-    padding: const EdgeInsets.all(16),
-    itemCount: filteredItems.length,
-    separatorBuilder: (_, __) => const SizedBox(height: 12),
-    itemBuilder: (context, i) =>
-    BrowseItemCard(item: filteredItems[i]),
-    ),
-    );
-    }),
-          )],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-// ── Type tab ─────────────────────────────────────────
-  Widget _typeTab(String label, bool selected) {
+  // ── Type tab ─────────────────────────────────────────
+  Widget _typeTab(String label, bool selected , String value) {
+    final selected = selectedType ==value;
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          setState(() => selectedType = label);
+          setState(() => selectedType =value  );
+          _applyFilters();
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
@@ -171,12 +238,13 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
     );
   }
 
-// ── Category chip ──────────────────────────────────────
+  // ── Category chip ──────────────────────────────────────
   Widget _categoryChip(String label) {
     final selected = selectedCategory == label;
     return GestureDetector(
       onTap: () {
         setState(() => selectedCategory = label);
+        _applyFilters();
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -200,7 +268,7 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
     );
   }
 
-// ── Empty state ───────────────────────────────────────
+  // ── Empty state ───────────────────────────────────────
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -224,5 +292,4 @@ class _BrowseScreen extends ConsumerState<BrowseScreen> {
       ),
     );
   }
-
 }

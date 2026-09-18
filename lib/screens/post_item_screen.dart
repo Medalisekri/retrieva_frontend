@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,11 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/core/services/cloudinary_service.dart';
 import 'package:retrieva/providers/item_provider.dart';
-
-
 import 'package:flutter/foundation.dart';
-
-import '../core/theme/apptheme.dart';
+import '../core/theme/app_theme.dart';
 import '../models/item_model.dart';
 
 class PostItemScreen extends ConsumerStatefulWidget {
@@ -32,8 +27,6 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   final _descCtrl   = TextEditingController();
   final _locCtrl    = TextEditingController();
   var _dateCtrl   = TextEditingController();
-  Uint8List? _webImage;   // ← for web preview
-  File?      _image;
   double? _lat;
   double? _lng;
   String _type      = 'lost';   // 'lost' or 'found'
@@ -55,40 +48,32 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
     if (widget.existingItem != null) {
       final item = widget.existingItem!;
 
-      // 1. Text Fields
       _nameCtrl.text = item.name;
       _descCtrl.text = item.description ?? '';
 
-      // 2. Dropdowns / Switchers
       _type = item.type;
       _category = item.category;
       _status = item.status;
 
-      // 3. LOCATION: Set variables AND update the text controller
       _lat = item.lat;
       _lng = item.long;
       if (_lat != null && _lng != null) {
-        // Show coordinates in the location text field
         _locCtrl.text = '${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}';
       }
 
-      // 4. DATE: Parse the date AND update the text controller
       if (item.incidentDate != null && item.incidentDate!.isNotEmpty) {
         _selectedDate = DateTime.tryParse(item.incidentDate!);
         if (_selectedDate != null) {
-          // Format it back to "dd MMM yyyy" for the UI
           _dateCtrl.text = DateFormat('dd MMM yyyy').format(_selectedDate!);
         }
       }
 
-      // 5. IMAGE: Save the URL to the new state variable
       _networkImageUrl = item.imgUrl;
     }
 
-    // Keep your quick action logic if you still use it
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final arg = ModalRoute.of(context)?.settings.arguments as String?;
-      if (arg != null && widget.existingItem == null) { // Only override if NOT editing
+      final arg = GoRouterState.of(context).extra as String?;
+      if (arg != null && widget.existingItem == null) {
         setState(() => _type = arg);
       }
     });
@@ -110,8 +95,8 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
     if (picked == null) return;
 
     setState(() {
-      _pickedFile = picked;       // Save the XFile
-      _networkImageUrl = null;    // Clear old network image
+      _pickedFile = picked;
+      _networkImageUrl = null;
     });
   }
   // ── Pick date ─────────────────────────────────────────
@@ -145,13 +130,11 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
     setState(() => _loading = true);
 
     try {
-      // 1. Determine Image URL
-      String? finalImageUrl = _networkImageUrl; // Start with existing image (if editing)
+      String? finalImageUrl = _networkImageUrl;
 
       if (_pickedFile != null) {
         final cloudinary = CloudinaryService();
 
-        // Read bytes directly from the XFile (safe from cache cleanup)
         final bytes = await _pickedFile!.readAsBytes();
 
         finalImageUrl = await cloudinary.uploadBytes(
@@ -165,13 +148,13 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         }
       }
 
-      // 2. Build the Item
+
       final itemData = Item(
-        id: widget.existingItem?.id, // 👈 Crucial for Edit mode!
+        id: widget.existingItem?.id,
         type: _type,
         category: _category,
         name: _nameCtrl.text.trim(),
-        imgUrl: finalImageUrl, // 👈 Use the real URL
+        imgUrl: finalImageUrl ?? '',
         description: _descCtrl.text.trim(),
         lat: double.parse(_lat!.toStringAsFixed(7)),
         long: double.parse(_lng!.toStringAsFixed(7)),
@@ -180,17 +163,16 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         isReported: false
       );
 
-      // 3. Send to API
+
       if (widget.existingItem != null) {
-        // 🟢 EDIT MODE (PATCH)
+
         await ref.read(myItemsNotifier.notifier).editMyItem(itemData);
       } else {
-        // 🔵 CREATE MODE (POST)
         await ref.read(itemNotifier.notifier).addItem(itemData);
       }
 
-      // 4. Close screen
-      if (mounted) Navigator.pop(context);
+      if (mounted && widget.existingItem!=null) { context.pop();}
+      else context.go(AppRoutes.home);
 
     } catch (e) {
       if (mounted) {
@@ -217,11 +199,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              size: 18, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -271,12 +249,10 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
               const SizedBox(height: 20),
 
               // ── Location ─────────────────────────────
-// ── Location ─────────────────────────────────────────
               _label('Location *'),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: () async {
-                  // ✅ Safe cast — never force cast Navigator result
                   final raw    = await context.push(AppRoutes.map);
                   final result = raw is Map ? Map<String, dynamic>.from(raw) : null;
 
@@ -310,7 +286,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
               const SizedBox(height: 20),
 
               // ── Date ─────────────────────────────────
-              _label('Date *'),
+              _label('Incident Date *'),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickDate,
@@ -341,12 +317,21 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                       size: 16, color: AppColors.teal),
                   SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      'Your name and phone will be auto-added when published.',
+                    child: Column(children: [
+                    Text(
+                      'Your name will be auto-added when published.',
                       style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.teal),
+                          color: AppColors.navyMid),
                     ),
+                      const SizedBox(height: 7,),
+                      Text(
+                        'All items will expire after 2 months from posting date.',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.navyMid),
+                      ),
+                    ])
                   ),
                 ]),
               ),
@@ -366,15 +351,18 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                         borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
-                  child: itemState.isLoading
-                      ? const SizedBox(
-                      height: 20, width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                      : const Text('Publish',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600)),
+                  child:_loading ?
+                      const SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      :Text(widget.existingItem !=null ? 'Update' : 'Publish' ,
+                    style:const TextStyle(fontSize: 16, fontWeight: FontWeight.w600) ,),
+
                 ),
               ),
               const SizedBox(height: 20),
@@ -426,8 +414,8 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   }
 
   // ── Photo Picker ──────────────────────────────────────
-    Widget _buildPhotoPicker() {
-    final hasLocalImage = _image != null;
+  Widget _buildPhotoPicker() {
+    final hasLocalImage = _pickedFile != null;
     final hasNetworkImage = !hasLocalImage && _networkImageUrl != null && _networkImageUrl!.isNotEmpty;
     final hasAnyImage = hasLocalImage || hasNetworkImage;
 
@@ -452,7 +440,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
             children: [
               // Show Local OR Network image
               if (hasLocalImage)
-                Image.file(_image!, fit: BoxFit.cover)
+                Image.file(File(_pickedFile!.path), fit: BoxFit.cover)
               else if (hasNetworkImage)
                 Image.network(_networkImageUrl!, fit: BoxFit.cover),
 
@@ -494,7 +482,6 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
       ),
     );
   }
-
   // ── Category Dropdown ─────────────────────────────────
   Widget _buildCategoryDropdown() {
     return Container(

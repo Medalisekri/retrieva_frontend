@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/auth_provider.dart';
-import '../core/theme/apptheme.dart';
+import '../core/theme/app_theme.dart';
+import '../core/utils/error_mapper.dart';
 import '../core/widgets/labled_field.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -80,9 +81,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     ref.listen(authNotifier, (prev, next) {
       next.whenOrNull(
-        error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
-        ),
+        error: (e, _) {
+          final msg = ErrorMapper.toFriendly(e);
+          if (msg.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+            );
+          }
+        },
       );
     });
 
@@ -119,7 +125,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Join ReFound',
+                      const Text('Join Retrieva',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
@@ -228,7 +234,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
 
                       const SizedBox(height: 16),
-
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('OR',
+                                style: TextStyle(
+                                    color: AppColors.textSecondary.withOpacity(0.6),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       OutlinedButton(
                         onPressed: authState.isLoading
                             ? null

@@ -1,11 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/auth_provider.dart';
-import '../core/theme/apptheme.dart';
-import '../core/widgets/hero_header.dart';
-import '../core/widgets/labled_field.dart';
+import '../core/theme/app_theme.dart';
+import '../core/utils/error_mapper.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -18,7 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   late final TextEditingController _emailCtrl;
   late final TextEditingController _passCtrl;
   bool _obscure = true;
-  bool _rememberMe = false;
+
 
   @override
   void initState() {
@@ -172,15 +172,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifier);
-
     ref.listen(authNotifier, (prev, next) {
-      if (prev?.isLoading == true && !next.hasError) {
-        context.go(AppRoutes.home);
-      }
       next.whenOrNull(
-        error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent),
-        ),
+        error: (e, _) {
+          final msg = ErrorMapper.toFriendly(e);
+          if (msg.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+            );
+          }
+        },
+        data: (_) {
+
+          if (FirebaseAuth.instance.currentUser != null) {
+            context.go(AppRoutes.home);
+          }
+        },
       );
     });
 
@@ -189,12 +196,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Simplified header
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-              decoration: const BoxDecoration(
-                color: AppColors.teal,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 85),
+              color: AppColors.navyLight,
               child: Column(
                 children: [
                   Container(
@@ -213,7 +217,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Image.asset('lib/assets/logo.png',
+                      child: Image.asset('lib/core/assets/logo.png',
                           fit: BoxFit.contain),
                     ),
                   ),
@@ -321,23 +325,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                       ),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _rememberMe,
-                                onChanged: (value) =>
-                                    setState(() => _rememberMe = value ?? false),
-                                activeColor: AppColors.teal,
-                              ),
-                              const Text('Remember me',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.textSecondary)),
-                            ],
-                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child:
                           TextButton(
                             onPressed: _showForgotPassword,
                             style: TextButton.styleFrom(
@@ -347,8 +337,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600)),
                           ),
-                        ],
-                      ),
+                          ),
+
 
                       const SizedBox(height: 16),
 
@@ -407,11 +397,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Image.asset(
-                              'lib/assets/google_logo.png', // Add Google logo asset
-                              height: 20,
-                              width: 20,
-                            ),
+                            const Icon(Icons.g_mobiledata , size: 24 , color: Colors.red,),
                             const SizedBox(width: 12),
                             const Text('Continue with Google',
                                 style: TextStyle(

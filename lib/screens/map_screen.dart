@@ -1,12 +1,14 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/providers/item_provider.dart';
-
 import '../core/helper/location_helper.dart';
-import '../core/theme/apptheme.dart';
+import '../core/theme/app_theme.dart';
 import '../models/item_model.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -18,22 +20,34 @@ ConsumerState<MapScreen> createState() => _MapScreenState();
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   final MapController _mapController = MapController();
-  String? _address;
+  LatLng _center = const LatLng(34.0, 9.5); // Tunis default
+  LatLng? _userLocation;
+  Item? _selected;
+  String _filter         = 'all'; // 'all' | 'lost' | 'found'
+  String _addressLabel = '';
+  bool   _geocoding    = false;
+
   Future<void> _loadAddress(Item item) async {
-    if (_item?.lat != null && _item?.long != null) {
-      final address = await getAddressFromLatLong(_item?.lat, _item?.long);
+    if (item.lat != null && item.long != null) {
+      final point = LatLng(item.lat, item.long);
+
+      // Show loading state
+      setState(() {
+        _geocoding = true;
+        _addressLabel = '';
+      });
+
+      // Get address from service
+      final address = await GeocodingService.getAddressFromCoordinates(point);
+
       if (mounted) {
-        setState(() => _address = address);
+        setState(() {
+          _addressLabel = address;
+          _geocoding = false;
+        });
       }
     }
   }
-  LatLng _center         = const LatLng(36.8065, 10.1815); // Tunis default
-  LatLng? _userLocation;
-  List<Item> _items = [];
-  Item? _item;
-  Item? _selected;
-  bool _loading          = true;
-  String _filter         = 'all'; // 'all' | 'lost' | 'found'
 
 
   @override
@@ -44,20 +58,31 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ref.read(itemNotifier.notifier).loadItems();
     });
     // In initState or after _item loads
-
+  _getCurrentLocation();
   }
 
+Future<void> _getCurrentLocation() async {
+    try {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.deniedForever) return;
 
+    final pos = await Geolocator.getCurrentPosition();
+    if (!mounted) return;
 
-  // ── Load all items from Firestore ─────────────────────
+    final loc = LatLng(pos.latitude, pos.longitude);
+    setState(() {
+    _userLocation = loc;
+    });
+}catch (e){}
 
-
-
+    }
 
   @override
   Widget build(BuildContext context) {
     final itemState = ref.watch(itemNotifier);
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -70,11 +95,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              size: 18, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+
       ),
       body: Stack(
         children: [
@@ -83,61 +104,86 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: _center,
-              initialZoom: 12,
+              initialZoom: 6.5,
               onTap: (_, __) => setState(() => _selected = null),
             ),
             children: [
-              // OpenStreetMap tile layer
               TileLayer(
-                urlTemplate:
-                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.retrieva.app',
               ),
 
-              // Item markers
-              MarkerLayer(
-                markers: [
-                  // User location marker
-                  if (_userLocation != null)
-                    Marker(
-                      point: _userLocation!,
-                      width: 40, height: 40,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.teal,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(Icons.my_location_rounded,
-                            color: Colors.white, size: 18),
-                      ),
-                    ),
+              Builder(
+                builder: (context) {
+                  final mapCamera = MapCamera.of(context);
+                  final visibleBounds = mapCamera.visibleBounds;
 
-                  // Item markers
-                  ...?itemState.value?.map((item) => Marker(
-                    point: LatLng(item.lat, item.long),
-                    width: 40, height: 40,
-                    child: GestureDetector(
-                      onTap: (){ setState(() => _selected = item); _loadAddress(item);},
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: item.isLost
-                              ? const Color(0xFFE24B4A)
-                              : AppColors.teal,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                  final visibleItems = itemState.value?.where((item) {
+                    final passesFilter =
+                        _filter == 'all' ||
+                            (_filter == 'lost' && item.isLost) ||
+                            (_filter == 'found' && !item.isLost);
+
+                    final isOnScreen = visibleBounds.contains(
+                      LatLng(item.lat, item.long),
+                    );
+
+                    return passesFilter && isOnScreen;
+                  }).toList() ?? [];
+
+                  return MarkerLayer(
+                    markers: [
+                      if (_userLocation != null)
+                        Marker(
+                          point: _userLocation!,
+                          width: 40,
+                          height: 40,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.teal,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.my_location_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          item.isLost
-                              ? Icons.search_off_rounded
-                              : Icons.check_circle_outline_rounded,
-                          color: Colors.white,
-                          size: 18,
+
+                      ...visibleItems.map(
+                            (item) => Marker(
+                          point: LatLng(item.lat, item.long),
+                          width: 40,
+                          height: 40,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() => _selected = item);
+                              _loadAddress(item);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: item.isLost
+                                    ? const Color(0xFFE24B4A)
+                                    : AppColors.teal,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: Icon(
+                                item.isLost
+                                    ? Icons.search_off_rounded
+                                    : Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  )),
-                ],
+                    ],
+                  );
+                },
               ),
             ],
           ),
@@ -289,23 +335,50 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ]),
               const SizedBox(height: 4),
-              Row(children: [
-                const Icon(Icons.location_on_outlined,
-                    size: 13, color: AppColors.textSecondary),
+              Row(
+                  children: [
                 const SizedBox(width: 3),
-                Text(_address ?? '',
-                    style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary)),
-              ]),
+                Expanded(child:
+                Row(
+                  children: [
+                    _geocoding
+                        ? const SizedBox(
+                      width: 13,
+                      height: 13,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                        : const Icon(Icons.location_on_outlined,
+                        size: 13, color: AppColors.textSecondary),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text(
+                        _geocoding
+                            ? 'Getting address...'
+                            : _addressLabel.isNotEmpty
+                            ? _addressLabel
+                            : 'No address available',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _geocoding
+                              ? AppColors.textSecondary.withOpacity(0.5)
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+                )]),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 height: 34,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(
-                      context, '/item-detail',
-                      arguments: item),
+                  onPressed: () => context.push(AppRoutes.detail,
+                      extra: item),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.teal,
                     foregroundColor: Colors.white,

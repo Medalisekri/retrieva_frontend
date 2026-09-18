@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/apptheme.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../models/item_model.dart';
 import '../router/app_routes.dart';
 
@@ -89,7 +89,7 @@ class BrowseItemCard extends StatelessWidget {
                           size: 13, color: AppColors.teal),   // ← teal instead of gray
                       const SizedBox(width: 3),
                       Text(
-                        item.createdAt.toString(),   // ← now shows "18 Mar 2026" cleanly
+                        item.incidentDate.toString() ,   // ← now shows "18 Mar 2026" cleanly
                         style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary),

@@ -1,19 +1,22 @@
 class ProfileModel {
+  final int userId;
   final bool isVerified;
   final String fullName;
+  final String? onesignalId;
   ProfileModel({
+    required this.userId,
     required this.isVerified,
-    required this.fullName
+    required this.fullName,
+    this.onesignalId
 });
-  Map<String , dynamic> toJson()=>{
-    'isVerified':isVerified,
-    'fullName': fullName
-  };
+
 
   factory ProfileModel.fromJson(Map<String , dynamic> json){
     return ProfileModel(
-        isVerified: json['is_verified'],
-        fullName: json['full_name'],
+        userId: json['user_id'] ?? 0,
+        isVerified: json['is_verified'] ?? false,
+        fullName: json['full_name'] ?? '',
+        onesignalId: json['onesignal_id'] ?? ''
     );
   }
 

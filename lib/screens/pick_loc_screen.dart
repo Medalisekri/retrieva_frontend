@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../core/theme/apptheme.dart';
+import '../core/helper/location_helper.dart';
+import '../core/theme/app_theme.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   const LocationPickerScreen({super.key});
@@ -15,7 +14,7 @@ class LocationPickerScreen extends StatefulWidget {
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
   final MapController _mapController = MapController();
-  LatLng _picked       = const LatLng(36.8065, 10.1815);
+  LatLng _picked = const LatLng(34.0, 9.5);
   String _addressLabel = '';
   bool   _geocoding    = false;   // ← shows loading while fetching address
 
@@ -34,84 +33,35 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       if (perm == LocationPermission.deniedForever) return;
 
       final pos = await Geolocator.getCurrentPosition();
-
-      // ✅ mounted check after every await
       if (!mounted) return;
 
       final loc = LatLng(pos.latitude, pos.longitude);
-      setState(() => _picked = loc);
+
+
+      setState(() {
+        _picked = loc;
+        _geocoding = true;
+        _addressLabel = '';
+      });
       _mapController.move(loc, 14);
-      _reverseGeocode(loc);
+
+      final address = await GeocodingService.getAddressFromCoordinates(loc);
+      if (mounted) {
+        setState(() {
+          _addressLabel = address;
+          _geocoding = false;
+        });
+      }
     } catch (_) {}
   }
 
-  Future<void> _reverseGeocode(LatLng point) async {
-    // ✅ Show loading indicator
-    if (!mounted) return;
-    setState(() {
-      _geocoding    = true;
-      _addressLabel = '';
-    });
 
-    try {
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse'
-            '?lat=${point.latitude}&lon=${point.longitude}'
-            '&format=json&accept-language=en',
-      );
-
-      final response = await http.get(url, headers: {
-        'User-Agent': 'RetrievaApp/1.0',
-      });
-
-      // ✅ Always check mounted after every await
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        final data    = jsonDecode(response.body);
-        final address = data['address'] as Map<String, dynamic>? ?? {};
-
-        final parts = <String>[];
-        if (address['road']    != null) parts.add(address['road']);
-        if (address['suburb']  != null) parts.add(address['suburb']);
-        if (address['city']    != null) {
-          parts.add(address['city']);
-        } else if (address['town']    != null) {
-          parts.add(address['town']);
-        } else if (address['village'] != null) {
-          parts.add(address['village']);
-        }
-
-        if (!mounted) return;
-        setState(() {
-          _addressLabel = parts.isNotEmpty
-              ? parts.join(', ')
-              : (data['display_name'] as String?) ?? '';
-          _geocoding = false;
-        });
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _addressLabel = _coordFallback(point);
-          _geocoding    = false;
-        });
-      }
-    } catch (_) {
-      // ✅ mounted check in catch too
-      if (!mounted) return;
-      setState(() {
-        _addressLabel = _coordFallback(point);
-        _geocoding    = false;
-      });
-    }
-  }
 
   String _coordFallback(LatLng point) =>
       '${point.latitude.toStringAsFixed(4)}, '
           '${point.longitude.toStringAsFixed(4)}';
 
   void _confirm() {
-    // ✅ Cancel any pending geocode — just pop with current state
     Navigator.pop<Map<String, dynamic>>(context, {
       'lat':     _picked.latitude,
       'lng':     _picked.longitude,
@@ -157,12 +107,21 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: _picked,
-              initialZoom: 13,
-              onTap: (_, point) {
-                // ✅ mounted check before setState in callback
-                if (!mounted) return;
-                setState(() => _picked = point);
-                _reverseGeocode(point);
+              initialZoom: 6.5,
+              onTap: (_, point) async {
+                setState(() {
+                  _picked = point;
+                  _geocoding = true;
+                  _addressLabel = '';
+                });
+
+                final address = await GeocodingService.getAddressFromCoordinates(point);
+                if (mounted) {
+                  setState(() {
+                    _addressLabel = address;
+                    _geocoding = false;
+                  });
+                }
               },
             ),
             children: [

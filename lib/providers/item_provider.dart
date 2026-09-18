@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/repositories/item_repository.dart';
 
@@ -11,25 +9,22 @@ final itemRepositoryProvider = Provider<ItemRepository>((ref)
 class ItemNotifier extends AsyncNotifier<List<Item>> {
   @override
   Future<List<Item>> build() async {
-    return _repository.getItems();
+    return _repository.getAllItems();
   }
 
   ItemRepository get _repository => ref.read(itemRepositoryProvider);
 
-
   Future<void> loadItems() async {
-    state = const AsyncValue.loading();
+
     state = await AsyncValue.guard<List<Item>>(() async {
-      return await _repository.getItems();
+      return await _repository.getAllItems();
     }
     );
   }
 
-
-
   Future<void> addItem(Item item) async {
     final currentItems = state.value ?? [];
-    state = const AsyncValue.loading();
+
     state = await AsyncValue.guard(() async {
       final newItem = await _repository.addItem(item);
       return [...currentItems, newItem];
@@ -37,40 +32,39 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
     );
   }
 }
+
 class MyItemsNotifier extends AsyncNotifier<List<Item>> {
   @override
   Future<List<Item>> build() async {
-    return _repository.getItems();
+    return _repository.getMyItems();
   }
 
   ItemRepository get _repository => ref.read(itemRepositoryProvider);
 
   Future<void> loadMyItems() async {
-    state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
       return await _repository.getMyItems();
     }
     );
   }
+
   Future<Item> loadItemDetail(int id) async {
-
      return  await _repository.getItemDetail(id);
-
-         }
+  }
 
   Future<void> editMyItem(Item item) async {
     final currentItems = state.value ?? [];
-    state = const AsyncValue.loading();
+
     state = await AsyncValue.guard<List<Item>>(() async {
       final editedItem = await _repository.editItem(item);
-      return [...currentItems, editedItem];
+      return currentItems.map((i) => i.id == editedItem.id ? editedItem : i).toList();
     }
     );
   }
 
   Future<void> deleteMyItem( Item item) async {
     final currentItems = state.value ?? [];
-    state = const AsyncValue.loading();
+
     state = await AsyncValue.guard<List<Item>>(() async {
       await _repository.deleteItem(item.id!);
       return currentItems.where((i) => i.id != item.id).toList();
@@ -80,7 +74,6 @@ class MyItemsNotifier extends AsyncNotifier<List<Item>> {
 
   Future<void> markAsResolved(Item item) async {
     final currentItems = state.value ?? [];
-    state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<Item>>(() async {
       await _repository.markAsResolved(item.id!, {
         'status': 'resolved'

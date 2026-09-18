@@ -1,24 +1,19 @@
 import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:retrieva/core/helper/auth_helper.dart';
 import 'package:retrieva/models/chat_model.dart';
 
 class ChatRepository {
   final Dio _dio = Dio(BaseOptions(
     baseUrl: '${dotenv.env['URL']}',
-    queryParameters:{ 'Content-Type' : 'application/json',}
-  ));
-  Future<Options> get  _authOptions async {
-    final token = FirebaseAuth.instance.currentUser?.getIdToken();
-    return Options( headers: {
-      if(token != null) 'Authorization' :'Bearer $token}'}
-    );
-  }
+    headers:{ 'Content-Type' : 'application/json',}
+  ))..interceptors.add(AuthInterceptor());
+
 
   Future<List<Conversation>> getConversations() async {
     final List<Conversation> conversations = [];
     try{
-      final  response = await _dio.get('/chats/conversations/' , options: await _authOptions);
+      final  response = await _dio.get('/chats/conversations/' );
       if(response.statusCode!=200){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
@@ -31,34 +26,20 @@ class ChatRepository {
   }
   Future<Conversation> getConversation(int conversationId) async{
     try{
-      final response = await _dio.get('/chats/conversations/$conversationId' , options:await _authOptions);
-      if(response.statusCode !=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
+      final response = await _dio.get('/chats/conversations/$conversationId');
       return Conversation.fromJson(response.data);
     }on DioException catch(e){
       throw Exception(e);
-
     }
 
   }
   Future<Conversation> createConversation({required int itemId , required int otherUserId}) async {
-
     try{
-      final  response = await _dio.post('/chats/conversations/' , options: await _authOptions ,
+      final  response = await _dio.post('/chats/conversations/' ,
           data: {'item':itemId , 'participant2' : otherUserId});
-      print('STATUS: ${response.statusCode}');
-      print('DATA: ${response.data}');
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
       return Conversation.fromJson(response.data );
-    }on DioException catch (e) {
-      print('PAYLOAD: ${e.requestOptions.data}');
-      print('ERROR STATUS: ${e.response?.statusCode}');
-      print('ERROR BODY: ${e.response?.data}');
-      rethrow;
+    } catch (e) {
+     throw Exception('Something went wrong $e');
     }
 
   }
@@ -66,30 +47,19 @@ class ChatRepository {
       {required int conversationId , required String? text , required String? imgUrl })  async {
 
     try{
-      final  response = await _dio.post('/chats/conversations/$conversationId/messages' , options: await _authOptions ,
-          data: {'conversation': conversationId , 'text':text , 'img_url' : imgUrl});
-      print('STATUS: ${response.statusCode}');
-      print('DATA: ${response.data}');
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
+      final  response = await _dio.post('/chats/conversations/$conversationId/messages/'  ,
+          data: { 'text':text , 'img_url' : imgUrl});
 
       return Message.fromJson(response.data );
-    }on DioException catch (e) {
-      print('PAYLOAD: ${e.requestOptions.data}');
-      print('ERROR STATUS: ${e.response?.statusCode}');
-      print('ERROR BODY: ${e.response?.data}');
-      rethrow;
+    }catch (e) {
+      throw Exception('Something went wrong $e');
     }
 
   }
   Future<List<Message>> getMessages(int conversationId) async {
     final List<Message> message = [];
     try{
-      final  response = await _dio.get('/chats/conversations/$conversationId/messages' , options: await _authOptions);
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
+      final  response = await _dio.get('/chats/conversations/$conversationId/messages/' );
       final List<dynamic> rawData = response.data as List<dynamic>;
       message.addAll(rawData.map((msg)=>Message.fromJson(msg as Map<String , dynamic>)).toList());
       return message;
@@ -97,42 +67,29 @@ class ChatRepository {
       throw Exception('Something went wrong $e');
     }
   }
-  Future<Message> deleteMessage(int id) async {
-
+  Future<void> deleteMessage(int id) async {
     try{
-      final  response = await _dio.delete('/chats/messages/$id' , options: await _authOptions);
-      print('STATUS: ${response.statusCode}');
-      print('DATA: ${response.data}');
-      if(response.statusCode!=200){
+      final  response = await _dio.delete('/chats/messages/$id/');
+      if (response.statusCode != 200 && response.statusCode != 201){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
-      return Message.fromJson(response.data );
-    }on DioException catch (e) {
-      print('PAYLOAD: ${e.requestOptions.data}');
-      print('ERROR STATUS: ${e.response?.statusCode}');
-      print('ERROR BODY: ${e.response?.data}');
-      rethrow;
+    }catch (e) {
+      throw Exception('Something went wrong $e');
     }
-
   }
   Future<Conversation> blockOtherUser(int conversationId ) async {
 
     try{
-      final  response = await _dio.post('/chats/conversations/$conversationId/block' , options: await _authOptions ,
+      final  response = await _dio.post('/chats/conversations/$conversationId/block/' ,
          );
-      print('STATUS: ${response.statusCode}');
-      print('DATA: ${response.data}');
-      if(response.statusCode!=200){
+      if (response.statusCode != 200 && response.statusCode != 201){
         throw Exception('Something went wrong ${response.statusMessage}');
       }
 
       return Conversation.fromJson(response.data );
-    }on DioException catch (e) {
-      print('PAYLOAD: ${e.requestOptions.data}');
-      print('ERROR STATUS: ${e.response?.statusCode}');
-      print('ERROR BODY: ${e.response?.data}');
-      rethrow;
+    }catch (e) {
+      throw Exception('Something went wrong $e');
     }
 
   }

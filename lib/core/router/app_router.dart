@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:retrieva/core/router/app_routes.dart';
+import 'package:retrieva/core/widgets/navigation_bar.dart';
 import 'package:retrieva/models/item_model.dart';
 import 'package:retrieva/screens/browse_screen.dart';
+import 'package:retrieva/screens/chat_list_screen.dart';
 import 'package:retrieva/screens/chat_screen.dart';
 import 'package:retrieva/screens/home_screen.dart';
 import 'package:retrieva/screens/item_details_screen.dart';
@@ -11,15 +14,47 @@ import 'package:retrieva/screens/item_details_screen.dart';
 import 'package:retrieva/screens/login_screen.dart';
 import 'package:retrieva/screens/map_screen.dart';
 import 'package:retrieva/screens/my_items_screen.dart';
+import 'package:retrieva/screens/onboarding_screen.dart';
 import 'package:retrieva/screens/pick_loc_screen.dart';
 import 'package:retrieva/screens/signup_screen.dart';
 
+import '../../models/chat_model.dart';
 import '../../screens/post_item_screen.dart';
+final showOnboardingProvider = Provider<bool>((ref) => false);
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final showOnboard = ref.watch(showOnboardingProvider);
   return GoRouter(
-    initialLocation: AppRoutes.items,
-    routes: [
+    initialLocation: showOnboard ? AppRoutes.onboard : AppRoutes.items,
 
+    redirect: (context, state) {
+      final user = FirebaseAuth.instance.currentUser;
+      final isLoggedIn = user != null;
+
+      final isLogin = state.matchedLocation == AppRoutes.login;
+      final isSignup = state.matchedLocation == AppRoutes.signup;
+      final isBrowse = state.matchedLocation == AppRoutes.items;
+      final isMap = state.matchedLocation == AppRoutes.mapView;
+      final isDetail = state.matchedLocation == AppRoutes.detail;
+
+
+      if (!isLoggedIn && !isLogin && !isSignup && !isBrowse  && !isDetail && !isMap) {
+        return AppRoutes.login;
+      }
+
+
+      if (isLoggedIn && (isLogin || isSignup)) {
+        return AppRoutes.home;
+      }
+      if (isLoggedIn && isBrowse) {
+        return AppRoutes.home;
+      }
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: AppRoutes.onboard,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(
         path: AppRoutes.signup,
         builder: (context, state) => const SignupScreen(),
@@ -59,7 +94,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const MainScreen(),
       ),
       GoRoute(
         path: AppRoutes.listing,
@@ -71,7 +106,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.message,
-        builder: (context, state) => const ChatScreen(),
+        builder: (context, state) {
+          final conversation = state.extra as Conversation;
+          return ChatScreen(conversation: conversation);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.convs,
+        builder: (context, state) => const ChatsListScreen(),
       ),
     ],
   );
