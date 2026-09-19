@@ -130,11 +130,11 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
               children: [
                 Row(
                   children: [
-                    _typeTab('All', selectedType == 'All' , 'All'),
+                    _typeTab('All' , 'All'),
                     const SizedBox(width: 8),
-                    _typeTab('Lost', selectedType == 'Lost' , 'lost'),
+                    _typeTab('Lost',  'lost'),
                     const SizedBox(width: 8),
-                    _typeTab('Found', selectedType == 'Found' , 'found'),
+                    _typeTab('Found', 'found'),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -206,7 +206,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   }
 
   // ── Type tab ─────────────────────────────────────────
-  Widget _typeTab(String label, bool selected , String value) {
+  Widget _typeTab(String label, String value) {
     final selected = selectedType ==value;
     return Expanded(
       child: GestureDetector(

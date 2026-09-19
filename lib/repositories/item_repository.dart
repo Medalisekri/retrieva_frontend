@@ -72,9 +72,6 @@ class ItemRepository  {
     final List<Item> items = [];
     try{
       final  response = await _dio.get('/items/my-items/' );
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
       final List<dynamic> rawData = response.data as List<dynamic>;
       await ItemsCache.save(rawData);
       items.addAll(rawData.map((item)=>Item.fromJson(item as Map<String , dynamic>)).toList());
@@ -96,9 +93,6 @@ class ItemRepository  {
 
     try{
       final  response = await _dio.get('/items/item/$id/');
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
       return Item.fromJson(response.data);
     }catch(e){
       throw Exception('Something went wrong $e');
@@ -110,13 +104,9 @@ class ItemRepository  {
 
     try{
       final  response = await _dio.post('/items/item/'  ,data: item.toJson());
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
       return Item.fromJson(response.data as Map<String , dynamic>);
     }on DioException catch (e) {
-      if (e.response?.statusCode ==403) {
+      if (e.response?.statusCode ==429) {
         final msg = e.response?.data['error'] ?? 'To many posts today';
         throw Exception(msg);
         }
@@ -128,10 +118,6 @@ class ItemRepository  {
 
     try{
       final  response = await _dio.patch('/items/item/${item.id}/' ,data: item.toJson());
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
       return Item.fromJson(response.data as Map<String , dynamic>);
     }catch (e) {
       throw Exception('Something went wrong $e');
@@ -141,23 +127,15 @@ class ItemRepository  {
   Future<void> deleteItem(int id) async {
 
     try{
-      final  response = await _dio.delete('/items/item/$id/' ,);
-      if(response.statusCode!=200 && response.statusCode!=201){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
+      await _dio.delete('/items/item/$id/' ,);
     }catch (e) {
       throw Exception('Something went wrong $e');
     }
 
   }
   Future<void> markAsResolved(int id , Map<String , String> data) async {
-
     try{
-      final  response = await _dio.patch('/items/item/$id/' , data: data);
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
+      await _dio.patch('/items/item/$id/' , data: data);
 
     }catch (e) {
       throw Exception('Something went wrong $e');

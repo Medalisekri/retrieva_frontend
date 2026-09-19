@@ -19,11 +19,15 @@ class AuthNotifier extends AsyncNotifier<void> {
    AuthRepository get _repository => ref.read(authRepositoryProvider);
 
   Future<void> signUp({required String email , required String password , required String fullName}) async {
+    state = const AsyncValue.loading();
   state = await AsyncValue.guard(() async {
     await _repository.signUp(email, password, fullName);
   }
 
     );
+  if (state.hasError) {
+    throw state.error!;
+  }
   }
    Future<void> signIn({required String email , required String password}) async {
     state = const AsyncValue.loading();

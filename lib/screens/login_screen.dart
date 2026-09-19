@@ -190,14 +190,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         },
       );
     });
-
+    final width = MediaQuery.of(context).size.width;
+    final horizontalPadding = width * 0.1;
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 85),
+              padding:  EdgeInsets.symmetric(vertical: 40, horizontal: horizontalPadding.clamp(16.0, 60.0)),
               color: AppColors.navyLight,
               child: Column(
                 children: [

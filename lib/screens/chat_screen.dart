@@ -20,7 +20,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _msgCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
 
-  Message? _editingMsg;
   bool _isBlocked = false;
   bool _sending = false;
 
@@ -86,6 +85,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       conversationId: conversationId,
       text: text,
       imgUrl: imgUrl,
+    );
+    ref.read(conversationNotifier.notifier).updateLastMessage(
+      conversationId: conversationId,
+      text: text.isNotEmpty ? text : '[Image]',
+      time: DateTime.now(),
     );
     _scrollToBottom();
   }
@@ -236,32 +240,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       GestureDetector(
                         onTap: _toggleBlock,
                         child: const Text('Unblock', style: TextStyle(fontSize: 13, color: AppColors.teal, fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
-                ),
-              if (_editingMsg != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: AppColors.teal.withOpacity(0.08),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit_outlined, size: 16, color: AppColors.teal),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Editing: ${_editingMsg!.text}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: AppColors.teal),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() => _editingMsg = null);
-                          _msgCtrl.clear();
-                        },
-                        child: const Icon(Icons.close_rounded, size: 18, color: AppColors.teal),
                       ),
                     ],
                   ),

@@ -17,7 +17,7 @@ class ContactRepository {
     required String message,
   }) async {
     try {
-      final response = await _dio.post(
+       await _dio.post(
         '/accounts/contact/',
         data: {
           'name': name,
@@ -26,11 +26,6 @@ class ContactRepository {
         },
       );
 
-      if (response.statusCode != 200) {
-        throw Exception(
-          response.data['error'] ?? 'Failed to send message',
-        );
-      }
     } on DioException catch (e) {
       final error = e.response?.data?['error'] ?? e.message;
       throw Exception(error);

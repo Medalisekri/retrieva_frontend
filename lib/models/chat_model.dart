@@ -37,7 +37,7 @@ class Conversation {
       createdAt: DateTime.tryParse(json['created_at']) ?? DateTime.now(),
       lastMessage: json['last_message'] ?? '',
       lastMessageTime: json['last_message_time'] != null
-          ? DateTime.parse(json['last_message_time'])
+          ? DateTime.tryParse(json['last_message_time'])
           : null,
       isBlocked: json['is_blocked'] ?? false,
     );
@@ -50,6 +50,29 @@ class Conversation {
 
   int getOtherId(int myUserId) {
     return participant1 == myUserId ? participant2 : participant1;
+  }
+
+  Conversation copyWith({
+    int? id,
+    int? item,
+    String? itemName,
+    int? participant1,
+    int? participant2,
+    String? participant1Username,
+    String? participant2Username,
+    DateTime? createdAt,
+    bool? isBlocked,
+    String? lastMessage,
+    DateTime? lastMessageTime
+  }) {
+    return Conversation(
+      id: id ?? this.id, item: item ?? this.item
+      ,createdAt: createdAt ?? this.createdAt ,isBlocked: isBlocked ?? this.isBlocked,
+      participant1: participant1 ?? this.participant1, participant2: participant2 ?? this.participant2,
+      participant1Username: participant1Username ?? this.participant1Username , participant2Username:
+        participant2Username ?? this.participant2Username, itemName: itemName ?? this.itemName
+     , lastMessage: lastMessage ?? this.lastMessage, lastMessageTime: lastMessageTime ?? this.lastMessageTime
+    );
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:retrieva/core/router/app_routes.dart';
 import 'package:retrieva/screens/browse_screen.dart';
 import 'package:retrieva/screens/chat_list_screen.dart';
 import 'package:retrieva/screens/chat_screen.dart';
@@ -26,8 +27,6 @@ class _MainScreenState extends State<MainScreen> {
         return HomeScreen();
       case 1:
         return ChatsListScreen();
-      case 2:
-        return PostItemScreen();
       case 3:
         return BrowseScreen();
       case 4:
@@ -85,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => setState(() => _currentIndex = 2),
+        onPressed: () => context.push(AppRoutes.post),
         backgroundColor: AppColors.teal,
         child:  Icon(Icons.add, color: Colors.white),
       ),

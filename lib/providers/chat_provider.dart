@@ -21,6 +21,7 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
 
 
   Future<void> getConversations() async {
+    state = const AsyncLoading();
     state = await AsyncValue.guard<List<Conversation>>(()async{
     return await  _repository.getConversations();
     });
@@ -28,6 +29,7 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
 
   Future<void> getConversation(int conversationId) async {
     final currentConversations = state.value ?? [];
+    state = const AsyncLoading();
     state = await AsyncValue.guard<List<Conversation>>(()async{
      final newConv =   await  _repository.getConversation(conversationId);
        return [...currentConversations , newConv];
@@ -45,6 +47,23 @@ class ConversationNotifier extends AsyncNotifier<List<Conversation>> {
       state = AsyncValue.data([...currentConversations, conversation]);
     }
     return conversation;
+  }
+
+  Future<void> updateLastMessage({
+    required int conversationId,
+    required String text,
+    required DateTime time,
+  }) async {
+    final current = state.value ?? [];
+    state = AsyncValue.data(
+      current.map((conv) {
+        if (conv.id == conversationId) {
+          return conv.copyWith(lastMessage: text , lastMessageTime: time);
+
+        }
+        return conv;
+      }).toList(),
+    );
   }
 
   Future<void> blockOtherUser({ required int conversationId }) async{

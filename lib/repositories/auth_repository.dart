@@ -16,15 +16,18 @@ class AuthRepository {
   Future<void> signUp(String email, String password, String fullName) async {
     final credential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
-    await credential.user?.sendEmailVerification();
+
+
 
     try {
+      await credential.user?.sendEmailVerification();
       final token = await credential.user?.getIdToken();
       await _dio.patch(
         '/accounts/profile/',
         data: {'full_name': fullName},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
+      await FirebaseAuth.instance.signOut();
     } catch (e) {
       await FirebaseAuth.instance.signOut();
       throw Exception('Account created, but profile setup failed. Please try again.');

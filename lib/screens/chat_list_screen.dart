@@ -54,11 +54,11 @@ class ChatsListScreen extends ConsumerWidget {
 
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: conversations.length,
+                itemCount: sortedConversations.length,
                 separatorBuilder: (_, __) => const Divider(
                     height: 1, color: AppColors.border, indent: 76, endIndent: 16),
                 itemBuilder: (_, i) {
-                  final conv = conversations[i];
+                  final conv = sortedConversations[i];
                   final otherName = conv.getOtherName(myUserId);
                   final otherId = conv.getOtherId(myUserId);
 

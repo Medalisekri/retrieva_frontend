@@ -31,6 +31,7 @@ class ItemNotifier extends AsyncNotifier<List<Item>> {
     }
     );
   }
+
 }
 
 class MyItemsNotifier extends AsyncNotifier<List<Item>> {

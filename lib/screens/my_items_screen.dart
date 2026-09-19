@@ -386,7 +386,7 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
                 ),
                 child: SizedBox(
                   width: 105,
-                  height: 128,
+                  height: 145,
                   child: item.imgUrl?.isNotEmpty == true
                       ? Image.network(
                     item.imgUrl!,
@@ -470,7 +470,7 @@ class _MyListingsScreenState extends ConsumerState<MyListingsScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
                       Row(
                         children: [

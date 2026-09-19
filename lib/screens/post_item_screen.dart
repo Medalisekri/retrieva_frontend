@@ -169,18 +169,22 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         await ref.read(myItemsNotifier.notifier).editMyItem(itemData);
       } else {
         await ref.read(itemNotifier.notifier).addItem(itemData);
+        ref.invalidate(myItemsNotifier);
       }
 
-      if (mounted && widget.existingItem!=null) { context.pop();}
-      else context.go(AppRoutes.home);
+      if (!mounted) return;
+      context.pop();
 
-    } catch (e) {
+
+    }catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    } finally {
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+      content: Text(e.toString().replaceFirst('Exception: ', '')),
+      backgroundColor: Colors.red,
+      ),
+      );
+      }} finally {
       if (mounted) setState(() => _loading = false);
     }
   }

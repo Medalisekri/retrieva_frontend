@@ -14,9 +14,6 @@ class ChatRepository {
     final List<Conversation> conversations = [];
     try{
       final  response = await _dio.get('/chats/conversations/' );
-      if(response.statusCode!=200){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
       final List<dynamic> rawData = response.data as List<dynamic>;
       conversations.addAll(rawData.map((conv)=>Conversation.fromJson(conv as Map<String , dynamic>)).toList());
       return conversations;
@@ -24,6 +21,7 @@ class ChatRepository {
       throw Exception('Something went wrong $e');
     }
   }
+
   Future<Conversation> getConversation(int conversationId) async{
     try{
       final response = await _dio.get('/chats/conversations/$conversationId');
@@ -33,16 +31,21 @@ class ChatRepository {
     }
 
   }
+
   Future<Conversation> createConversation({required int itemId , required int otherUserId}) async {
     try{
       final  response = await _dio.post('/chats/conversations/' ,
           data: {'item':itemId , 'participant2' : otherUserId});
       return Conversation.fromJson(response.data );
-    } catch (e) {
-     throw Exception('Something went wrong $e');
+    } on DioException catch(e){
+      if(e.response!.statusCode == 403){
+        throw Exception('You need to login');
+      }
+      throw Exception('Something went wrong $e');
     }
 
   }
+
   Future<Message> sendMessage(
       {required int conversationId , required String? text , required String? imgUrl })  async {
 
@@ -51,7 +54,7 @@ class ChatRepository {
           data: { 'text':text , 'img_url' : imgUrl});
 
       return Message.fromJson(response.data );
-    }catch (e) {
+    }on DioException catch(e){
       throw Exception('Something went wrong $e');
     }
 
@@ -67,30 +70,23 @@ class ChatRepository {
       throw Exception('Something went wrong $e');
     }
   }
+
   Future<void> deleteMessage(int id) async {
     try{
-      final  response = await _dio.delete('/chats/messages/$id/');
-      if (response.statusCode != 200 && response.statusCode != 201){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
+       await _dio.delete('/chats/messages/$id/');
     }catch (e) {
       throw Exception('Something went wrong $e');
     }
   }
+
   Future<Conversation> blockOtherUser(int conversationId ) async {
 
     try{
       final  response = await _dio.post('/chats/conversations/$conversationId/block/' ,
          );
-      if (response.statusCode != 200 && response.statusCode != 201){
-        throw Exception('Something went wrong ${response.statusMessage}');
-      }
-
       return Conversation.fromJson(response.data );
     }catch (e) {
       throw Exception('Something went wrong $e');
     }
-
   }
 }
