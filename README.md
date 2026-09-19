@@ -16,10 +16,11 @@ The app follows a clean three-layer architecture — screens never touch Dio or 
 ```
 lib/
 ├── core/
+│   ├── helper/         # GeocodingService, AuthInterceptor
 │   ├── router/         # GoRouter setup and route constants
-│   ├── services/       # CloudinaryService, GeocodingService, OneSignalService, ItemsCache
-│   ├── helper/         # AuthInterceptor, ErrorMapper
+│   ├── services/       # CloudinaryService, OneSignalService     
 │   ├── theme/          # Colors, typography, button styles
+│   ├── utils/          # ErrorMapper, ItemsCache  
 │   └── widgets/        # Reusable components
 ├── models/             # Item, Conversation, Message, ProfileModel
 ├── repositories/       # AuthRepository, ItemRepository, ChatRepository, ContactRepository
@@ -46,7 +47,7 @@ Screens call **Providers**, Providers call **Repositories**, Repositories call *
 | Offline support | Cached items load from SharedPreferences when offline |
 | My listings | Edit, resolve, and delete own items |
 | Report items | Flag inappropriate listings |
-| Onboarding | Shown once on first launch |
+
 
 ---
 
