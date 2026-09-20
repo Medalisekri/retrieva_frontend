@@ -9,6 +9,15 @@
 
 ---
 
+## Screenshots
+
+
+| Login | Home | Add Expense |
+|---|---|---|
+| *<img width="200" height="400" alt="Screenshot (391)" src="https://github.com/user-attachments/assets/fe103a9f-952d-428b-ba8c-b3c57ab8c786" />* | *<img width="200" height="400" alt="Screenshot (390)" src="https://github.com/user-attachments/assets/cab73bee-3920-4af9-8c44-fcbafa4e4a29" />*| *<img width="200" height="400" alt="Screenshot (388)" src="https://github.com/user-attachments/assets/e251da67-ece6-44ab-80f5-def0e08ac31b" />*|
+
+---
+
 ## Architecture
 
 The app follows a clean three-layer architecture — screens never touch Dio or API logic directly.
