@@ -14,7 +14,7 @@
 
 | Browse | Map | Detail |
 |---|---|---|
-| *<img width="400" height="600" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/fc00c1c5-7d95-43af-8801-e1fbb2e2c59f" />* | *<img width="400" height="600" alt="Screenshot_20260919-212059" src="https://github.com/user-attachments/assets/01738736-b062-433e-9c48-cd389adfcabb" />* | *<img width="400" height="600" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/44ebb801-b13d-419d-85b9-0e7343b60e57" />* |
+| *<img width="250" height="400" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/fc00c1c5-7d95-43af-8801-e1fbb2e2c59f" />* | *<img width="250" height="400" alt="Screenshot_20260919-212059" src="https://github.com/user-attachments/assets/01738736-b062-433e-9c48-cd389adfcabb" />* | *<img width="250" height="400" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/44ebb801-b13d-419d-85b9-0e7343b60e57" />* |
 
 ---
 
