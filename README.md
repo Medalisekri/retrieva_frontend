@@ -12,9 +12,9 @@
 ## Screenshots
 
 
-| Login | Home | Add Expense |
+| Browse | Map | Detail |
 |---|---|---|
-| *<img width="200" height="400" alt="Screenshot (391)" src="https://github.com/user-attachments/assets/fe103a9f-952d-428b-ba8c-b3c57ab8c786" />* | *<img width="200" height="400" alt="Screenshot (390)" src="https://github.com/user-attachments/assets/cab73bee-3920-4af9-8c44-fcbafa4e4a29" />*| *<img width="200" height="400" alt="Screenshot (388)" src="https://github.com/user-attachments/assets/e251da67-ece6-44ab-80f5-def0e08ac31b" />*|
+| *<img width="720" height="1438" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/fc00c1c5-7d95-43af-8801-e1fbb2e2c59f" />* | *<img width="717" height="1418" alt="Screenshot_20260919-212059" src="https://github.com/user-attachments/assets/01738736-b062-433e-9c48-cd389adfcabb" />* | *<img width="720" height="1438" alt="Screenshot_20260919-214432" src="https://github.com/user-attachments/assets/44ebb801-b13d-419d-85b9-0e7343b60e57" />* |
 
 ---
 
